@@ -67,7 +67,4 @@ ActiveSupport.on_load(:active_record) do
   require 'switch_point/query_cache'
 
   ActiveRecord::Base.send(:include, SwitchPoint::Model)
-  ActiveRecord::ConnectionAdapters::AbstractAdapter.class_eval do
-    prepend SwitchPoint::Connection
-  end
 end
