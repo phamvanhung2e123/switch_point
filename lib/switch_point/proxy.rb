@@ -24,7 +24,7 @@ module SwitchPoint
       if model_name
         model = Class.new(ActiveRecord::Base)
         Proxy.const_set(model_name, model)
-        model.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env][SwitchPoint.config.database_name(name, mode).to_s]
+        model.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env][SwitchPoint.config.database_name(name, mode).to_s])
         model
       elsif mode == :readonly
         # Re-use writable connection
