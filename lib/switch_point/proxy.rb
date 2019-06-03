@@ -7,7 +7,7 @@ module SwitchPoint
     attr_reader :initial_name
 
     AVAILABLE_MODES = %i[writable readonly].freeze
-    DEFAULT_MODE = :readonly
+    DEFAULT_MODE = :writable
 
     def initialize(name)
       @initial_name = name
@@ -24,7 +24,7 @@ module SwitchPoint
       if model_name
         model = Class.new(ActiveRecord::Base)
         Proxy.const_set(model_name, model)
-        model.establish_connection(SwitchPoint.config.database_name(name, mode))
+        model.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env][SwitchPoint.config.database_name(name, mode).to_s]
         model
       elsif mode == :readonly
         # Re-use writable connection

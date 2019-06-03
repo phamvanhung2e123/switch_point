@@ -2,11 +2,12 @@
 
 module SwitchPoint
   class Config
-    attr_accessor :auto_writable
+    attr_accessor :auto_writable, :env
     alias_method :auto_writable?, :auto_writable
 
     def initialize
       self.auto_writable = false
+      self.env = :test
     end
 
     def define_switch_point(name, config)
