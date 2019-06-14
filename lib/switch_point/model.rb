@@ -62,7 +62,7 @@ module SwitchPoint
           raise Error.new("switch_point's model names must be consistent")
         end
 
-        with_writable do
+        with_master do
           transaction(&block)
         end
       end

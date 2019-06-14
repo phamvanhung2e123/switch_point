@@ -49,12 +49,12 @@ Benchmark.ips do |x|
   end
 
   x.report('proxy1') do
-    Proxy1.with_writable { Proxy1.create }
+    Proxy1.with_master { Proxy1.create }
     Proxy1.first
   end
 
   x.report('proxy2') do
-    Proxy2.with_writable { Proxy2.create }
+    Proxy2.with_master { Proxy2.create }
     Proxy2.first
   end
 

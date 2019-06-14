@@ -121,7 +121,7 @@ end
 ActiveRecord::Base.connection # Create connection
 
 [Book, User, Nanika3].each do |model|
-  model.with_writable do
+  model.with_master do
     if model.switch_point_proxy.connected?
       raise "#{model.name} didn't establish connection lazily!"
     end

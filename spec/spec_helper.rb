@@ -39,17 +39,17 @@ RSpec.configure do |config|
   end
 
   config.before(:suite) do
-    Book.with_writable do
+    Book.with_master do
       Book.connection.execute('CREATE TABLE books (id integer primary key autoincrement)')
     end
 
-    Book2.with_writable do
+    Book2.with_master do
       Book2.connection.execute('CREATE TABLE book2s (id integer primary key autoincrement)')
     end
 
     FileUtils.cp('main_writable.sqlite3', 'main_readonly.sqlite3')
 
-    Book3.with_writable do
+    Book3.with_master do
       Book3.connection.execute('CREATE TABLE book3s (id integer primary key autoincrement)')
     end
 
@@ -67,7 +67,7 @@ RSpec.configure do |config|
   end
 
   config.after(:each) do
-    Book.with_writable do
+    Book.with_master do
       Book.delete_all
     end
     FileUtils.cp('main_writable.sqlite3', 'main_readonly.sqlite3')

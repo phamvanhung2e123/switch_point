@@ -79,7 +79,7 @@ Comment.with_slave { Comment.first } # Read from db-comment-slave
 Article.with_slave do
   article = Article.first  # Read from db-blog-slave
   article.title = 'new title'
-  Article.with_writable do
+  Article.with_master do
     article.save!  # Write to db-blog-master
     article.reload  # Read from db-blog-master
     Category.first  # Read from db-blog-master

@@ -42,12 +42,12 @@ module SwitchPoint
       with_slave(*config.keys, &block)
     end
 
-    def with_writable(*names, &block)
+    def with_master(*names, &block)
       with_mode(:writable, *names, &block)
     end
 
-    def with_writable_all(&block)
-      with_writable(*config.keys, &block)
+    def with_master_all(&block)
+      with_master(*config.keys, &block)
     end
 
     def with_mode(mode, *names, &block)

@@ -8,7 +8,7 @@ class TestApp
     state = {}
     [Nanika1, Nanika2].each do |model|
       r = model.with_slave { model.connection.query_cache_enabled }
-      w = model.with_writable { model.connection.query_cache_enabled }
+      w = model.with_master { model.connection.query_cache_enabled }
       state[model.name] = { readonly: r, writable: w }
     end
     env[:state] = state
@@ -31,7 +31,7 @@ RSpec.describe SwitchPoint::QueryCache do
       # https://github.com/rails/rails/commit/25fc1f584def4c1bc36be805833194d8aee55b3a
       [Nanika1, Nanika2].each do |model|
         model.with_slave { model.connection }
-        model.with_writable { model.connection }
+        model.with_master { model.connection }
       end
     end
 
