@@ -12,41 +12,35 @@ module SwitchPoint
     def initialize(name)
       @initial_name = name
       @current_name = name
-      AVAILABLE_MODES.each do |mode|
-        model = define_model(name, mode)
-        memorize_switch_point(name, mode, model.connection_pool)
-      end
+      define_master_model(name)
+      define_slave_model(name)
       @global_mode = DEFAULT_MODE
     end
 
-    def define_model(name, mode)
-      model_name = SwitchPoint.config.model_name(name, mode)
+    def define_master_model(name)
+      model_name = SwitchPoint.config.master_model_name(name)
       if model_name
         model = Class.new(ActiveRecord::Base)
         Proxy.const_set(model_name, model)
-        model.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env][SwitchPoint.config.database_name(name, mode).to_s])
+        model.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env][SwitchPoint.config.master_model_name(name).to_s])
         model
-      elsif mode == :readonly
-        # Re-use writable connection
-        Proxy.const_get(SwitchPoint.config.model_name(name, :writable))
       else
         ActiveRecord::Base
       end
     end
 
-    def memorize_switch_point(name, mode, pool)
-      switch_point = { name: name, mode: mode }
-      if pool.equal?(ActiveRecord::Base.connection_pool)
-        if mode != :writable
-          raise Error.new("ActiveRecord::Base's switch_points must be writable, but #{name} is #{mode}")
+    def define_slave_model(name)
+      slave_count = SwitchPoint.config.slave_count(name)
+      (0..(slave_count-1)).foreach do |index|
+        model_name = SwitchPoint.config.slave_mode_name(name, index)
+        if model_name
+          model = Class.new(ActiveRecord::Base)
+          Proxy.const_set(model_name, model)
+          model.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env][SwitchPoint.config.slave_mode_name(name, index).to_s])
+          model
+        else
+          ActiveRecord::Base
         end
-        switch_points = pool.spec.config[:switch_points] || []
-        switch_points << switch_point
-        pool.spec.config[:switch_points] = switch_points
-      elsif pool.spec.config.key?(:switch_point)
-        # Only :writable is specified
-      else
-        pool.spec.config[:switch_point] = switch_point
       end
     end
 

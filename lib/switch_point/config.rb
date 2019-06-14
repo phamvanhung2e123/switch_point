@@ -19,14 +19,38 @@ module SwitchPoint
       @switch_points ||= {}
     end
 
-    def database_name(name, mode)
-      fetch(name)[mode]
+    def master_database_name(name)
+      fetch(name)[:masters]
+    end
+
+    def slave_database_name(name, index)
+      fetch(name)[:slaves][index]
     end
 
     def model_name(name, mode)
-      if fetch(name)[mode]
-        "#{name}_#{mode}".camelize
+      if mode == :master
+        master_model_name(name)
+      else
+        slave_mode_name(name, [rand(slave_count(name))])
       end
+    end
+
+    def master_model_name(name)
+      if fetch(name)[:master]
+        "#{name}_master".camelize
+      end
+    end
+
+    def slave_mode_name(name, index)
+      "#{name}_slave_index_#{index}".camelize
+    end
+
+    def slave_count(name)
+      fetch(name)[:slaves].count
+    end
+
+    def slave_mode_names(name)
+      (0..(fetch(name)[:slaves].count-1)).map { |i| slave_mode_name(name, i)  }
     end
 
     def fetch(name)
@@ -44,17 +68,17 @@ module SwitchPoint
     private
 
     def assert_valid_config!(config)
-      unless config.key?(:readonly) || config.key?(:writable)
-        raise ArgumentError.new(':readonly or :writable must be specified')
+      unless config.key?(:master) || config.key?(:slaves)
+        raise ArgumentError.new(':master or :slaves must be specified')
       end
-      if config.key?(:readonly)
-        unless config[:readonly].is_a?(Symbol)
-          raise TypeError.new(":readonly's value must be Symbol")
+      if config.key?(:slaves)
+        unless config[:slaves].is_a?(Array)
+          raise TypeError.new(":slaves's value must be Array")
         end
       end
-      if config.key?(:writable)
-        unless config[:writable].is_a?(Symbol)
-          raise TypeError.new(":writable's value must be Symbol")
+      if config.key?(:master)
+        unless config[:master].is_a?(Symbol)
+          raise TypeError.new(":master's value must be ")
         end
       end
       nil
