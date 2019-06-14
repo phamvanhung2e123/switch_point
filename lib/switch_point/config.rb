@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-
+require 'pry'
 module SwitchPoint
   class Config
     attr_accessor :auto_writable, :env
@@ -68,6 +68,7 @@ module SwitchPoint
     private
 
     def assert_valid_config!(config)
+      binding.pry
       unless config.key?(:master) || config.key?(:slaves)
         raise ArgumentError.new(':master or :slaves must be specified')
       end

@@ -14,24 +14,24 @@ module SwitchPoint
       @config ||= Config.new
     end
 
-    def readonly_all!
+    def slave_all!
       config.each_key do |name|
-        readonly!(name)
+        slave!(name)
       end
     end
 
-    def readonly!(name)
-      ProxyRepository.checkout(name).readonly!
+    def slave!(name)
+      ProxyRepository.checkout(name).slave!
     end
 
-    def writable_all!
+    def master_all!
       config.each_key do |name|
-        writable!(name)
+        master!(name)
       end
     end
 
-    def writable!(name)
-      ProxyRepository.checkout(name).writable!
+    def master!(name)
+      ProxyRepository.checkout(name).master!
     end
 
     def with_slave(*names, &block)

@@ -2,26 +2,26 @@
 
 SwitchPoint.configure do |config|
   config.define_switch_point :main,
-    readonly: :main_readonly,
-    writable: :main_writable
+    slaves: [:main_readonly],
+    master: :main_writable
   config.define_switch_point :main2,
-    readonly: :main2_readonly,
-    writable: :main2_writable
+    slaves: [:main2_readonly],
+    master: :main2_writable
   config.define_switch_point :user,
-    readonly: :user,
-    writable: :user
+    slaves: [:user],
+    master: :user
   config.define_switch_point :comment,
-    readonly: :comment_readonly,
-    writable: :comment_writable
+    slaves: [:comment_readonly],
+    master: :comment_writable
   config.define_switch_point :special,
-    readonly: :main_readonly_special,
-    writable: :main_writable
+    slaves: [:main_readonly_special],
+    master: :main_writable
   config.define_switch_point :nanika1,
-    readonly: :main_readonly
+    slaves: [:main_readonly]
   config.define_switch_point :nanika2,
-    readonly: :main_readonly
+    slaves: [:main_readonly]
   config.define_switch_point :nanika3,
-    writable: :comment_writable
+    master: :comment_writable
 end
 
 require 'active_record'
