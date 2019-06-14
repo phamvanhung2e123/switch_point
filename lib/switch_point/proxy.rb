@@ -22,7 +22,7 @@ module SwitchPoint
       if model_name
         model = Class.new(ActiveRecord::Base)
         Proxy.const_set(model_name, model)
-        model.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env][SwitchPoint.config.master_model_name(name).to_s])
+        model.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env][SwitchPoint.config.master_database_name(name).to_s])
         model
       else
         ActiveRecord::Base
@@ -31,12 +31,12 @@ module SwitchPoint
 
     def define_slave_model(name)
       slave_count = SwitchPoint.config.slave_count(name)
-      (0..(slave_count-1)).foreach do |index|
+      (0..(slave_count-1)).each do |index|
         model_name = SwitchPoint.config.slave_mode_name(name, index)
         if model_name
           model = Class.new(ActiveRecord::Base)
           Proxy.const_set(model_name, model)
-          model.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env][SwitchPoint.config.slave_mode_name(name, index).to_s])
+          model.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env][SwitchPoint.config.slave_database_name(name, index).to_s])
           model
         else
           ActiveRecord::Base

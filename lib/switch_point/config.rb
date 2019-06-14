@@ -31,7 +31,7 @@ module SwitchPoint
       if mode == :master
         master_model_name(name)
       else
-        slave_mode_name(name, [rand(slave_count(name))])
+        slave_mode_name(name, rand(slave_count(name)))
       end
     end
 
@@ -68,7 +68,6 @@ module SwitchPoint
     private
 
     def assert_valid_config!(config)
-      binding.pry
       unless config.key?(:master) || config.key?(:slaves)
         raise ArgumentError.new(':master or :slaves must be specified')
       end

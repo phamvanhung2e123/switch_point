@@ -93,15 +93,17 @@ base =
     { adapter: 'sqlite3' }
   end
 databases = {
-  'main_readonly' => base.merge(database: 'main_readonly.sqlite3'),
-  'main_writable' => base.merge(database: 'main_writable.sqlite3'),
-  'main2_readonly' => base.merge(database: 'main2_readonly.sqlite3'),
-  'main2_writable' => base.merge(database: 'main2_writable.sqlite3'),
-  'main_readonly_special' => base.merge(database: 'main_readonly_special.sqlite3'),
-  'user' => base.merge(database: 'user.sqlite3'),
-  'comment_readonly' => base.merge(database: 'comment_readonly.sqlite3'),
-  'comment_writable' => base.merge(database: 'comment_writable.sqlite3'),
-  'default' => base.merge(database: 'default.sqlite3'),
+    test: {
+        'main_readonly' => base.merge(database: 'main_readonly.sqlite3'),
+        'main_writable' => base.merge(database: 'main_writable.sqlite3'),
+        'main2_readonly' => base.merge(database: 'main2_readonly.sqlite3'),
+        'main2_writable' => base.merge(database: 'main2_writable.sqlite3'),
+        'main_readonly_special' => base.merge(database: 'main_readonly_special.sqlite3'),
+        'user' => base.merge(database: 'user.sqlite3'),
+        'comment_readonly' => base.merge(database: 'comment_readonly.sqlite3'),
+        'comment_writable' => base.merge(database: 'comment_writable.sqlite3'),
+        'default' => base.merge(database: 'default.sqlite3'),
+    }
 }
 ActiveRecord::Base.configurations =
   # ActiveRecord.gem_version was introduced in ActiveRecord 4.0
@@ -110,7 +112,8 @@ ActiveRecord::Base.configurations =
   else
     databases
   end
-ActiveRecord::Base.establish_connection(:default)
+require 'pry'
+ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env]["default"])
 
 # XXX: Check connection laziness
 [Book, User, Note, Nanika1, ActiveRecord::Base].each do |model|
