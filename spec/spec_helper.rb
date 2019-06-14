@@ -47,13 +47,13 @@ RSpec.configure do |config|
       Book2.connection.execute('CREATE TABLE book2s (id integer primary key autoincrement)')
     end
 
-    FileUtils.cp('main_writable.sqlite3', 'main_readonly.sqlite3')
+    FileUtils.cp('main_master.sqlite3', 'main_slave.sqlite3')
 
     Book3.with_master do
       Book3.connection.execute('CREATE TABLE book3s (id integer primary key autoincrement)')
     end
 
-    FileUtils.cp('main2_writable.sqlite3', 'main2_readonly.sqlite3')
+    FileUtils.cp('main2_master.sqlite3', 'main2_slave.sqlite3')
 
     Note.connection.execute('CREATE TABLE notes (id integer primary key autoincrement)')
 
@@ -70,7 +70,7 @@ RSpec.configure do |config|
     Book.with_master do
       Book.delete_all
     end
-    FileUtils.cp('main_writable.sqlite3', 'main_readonly.sqlite3')
+    FileUtils.cp('main_master.sqlite3', 'main_slave.sqlite3')
 
     Nanika3.delete_all
   end

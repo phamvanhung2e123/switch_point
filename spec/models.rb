@@ -2,26 +2,26 @@
 
 SwitchPoint.configure do |config|
   config.define_switch_point :main,
-    slaves: [:main_readonly],
-    master: :main_writable
+    slaves: [:main_slave],
+    master: :main_master
   config.define_switch_point :main2,
-    slaves: [:main2_readonly],
-    master: :main2_writable
+    slaves: [:main2_slave],
+    master: :main2_master
   config.define_switch_point :user,
     slaves: [:user],
     master: :user
   config.define_switch_point :comment,
-    slaves: [:comment_readonly],
-    master: :comment_writable
+    slaves: [:comment_slave],
+    master: :comment_master
   config.define_switch_point :special,
-    slaves: [:main_readonly_special],
-    master: :main_writable
+    slaves: [:main_slave_special],
+    master: :main_master
   config.define_switch_point :nanika1,
-    slaves: [:main_readonly]
+    slaves: [:main_slave]
   config.define_switch_point :nanika2,
-    slaves: [:main_readonly]
+    slaves: [:main_slave]
   config.define_switch_point :nanika3,
-    master: :comment_writable
+    master: :comment_master
 end
 
 require 'active_record'
@@ -94,14 +94,14 @@ base =
   end
 databases = {
     test: {
-        'main_readonly' => base.merge(database: 'main_readonly.sqlite3'),
-        'main_writable' => base.merge(database: 'main_writable.sqlite3'),
-        'main2_readonly' => base.merge(database: 'main2_readonly.sqlite3'),
-        'main2_writable' => base.merge(database: 'main2_writable.sqlite3'),
-        'main_readonly_special' => base.merge(database: 'main_readonly_special.sqlite3'),
+        'main_slave' => base.merge(database: 'main_slave.sqlite3'),
+        'main_master' => base.merge(database: 'main_master.sqlite3'),
+        'main2_slave' => base.merge(database: 'main2_slave.sqlite3'),
+        'main2_master' => base.merge(database: 'main2_master.sqlite3'),
+        'main_slave_special' => base.merge(database: 'main_slave_special.sqlite3'),
         'user' => base.merge(database: 'user.sqlite3'),
-        'comment_readonly' => base.merge(database: 'comment_readonly.sqlite3'),
-        'comment_writable' => base.merge(database: 'comment_writable.sqlite3'),
+        'comment_slave' => base.merge(database: 'comment_slave.sqlite3'),
+        'comment_master' => base.merge(database: 'comment_master.sqlite3'),
         'default' => base.merge(database: 'default.sqlite3'),
     }
 }

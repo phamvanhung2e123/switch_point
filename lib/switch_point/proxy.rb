@@ -125,7 +125,7 @@ module SwitchPoint
       if model_name
         Proxy.const_get(model_name)
       elsif mode == :slave
-        # When only writable is specified, re-use writable connection.
+        # When only master is specified, re-use master connection.
         with_master do
           model_for_connection
         end

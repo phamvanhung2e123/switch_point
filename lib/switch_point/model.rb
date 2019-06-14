@@ -74,16 +74,16 @@ module SwitchPoint
       end
 
       def can_transaction_with?(*models)
-        writable_switch_points = [self, *models].map do |model|
+        master_switch_points = [self, *models].map do |model|
           if model.instance_variable_defined?(:@switch_point_name)
             SwitchPoint.config.model_name(
               model.instance_variable_get(:@switch_point_name),
-              :writable
+              :master
             )
           end
         end
 
-        writable_switch_points.uniq.size == 1
+        master_switch_points.uniq.size == 1
       end
     end
 

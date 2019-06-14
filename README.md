@@ -4,7 +4,7 @@
 [![Coverage Status](https://img.shields.io/coveralls/eagletmt/switch_point.svg?branch=master)](https://coveralls.io/r/eagletmt/switch_point?branch=master)
 [![Code Climate](https://codeclimate.com/github/eagletmt/switch_point/badges/gpa.svg)](https://codeclimate.com/github/eagletmt/switch_point)
 
-Switching database connection between readonly one and writable one.
+Switching database connection between slave one and writable one.
 
 ## Installation
 
@@ -34,7 +34,7 @@ production_blog_master:
   host: db-blog-master
 production_blog_slave:
   adapter: mysql2
-  username: blog_readonly
+  username: blog_slave
   host: db-blog-slave
 production_comment_master:
     ...
@@ -45,10 +45,10 @@ In initializer:
 ```ruby
 SwitchPoint.configure do |config|
   config.define_switch_point :blog,
-    readonly: :"#{Rails.env}_blog_slave",
+    slave: :"#{Rails.env}_blog_slave",
     writable: :"#{Rails.env}_blog_master"
   config.define_switch_point :comment,
-    readonly: :"#{Rails.env}_comment_slave",
+    slave: :"#{Rails.env}_comment_slave",
     writable: :"#{Rails.env}_comment_master"
 end
 ```
@@ -91,7 +91,7 @@ Note that Article and Category shares their connections.
 
 ### Query cache
 `Model.cache` and `Model.uncached` enables/disables query cache for both
-readonly connection and writable connection.
+slave connection and writable connection.
 
 switch_point also provide a rack middleware `SwitchPoint::QueryCache` similar
 to `ActiveRecord::QueryCache`. It enables query cache for all models using
@@ -110,7 +110,7 @@ config.middleware.swap ActiveRecord::QueryCache, SwitchPoint::QueryCache, [:nani
 ### auto_writable
 `auto_writable` is disabled by default.
 
-When `auto_writable` is enabled, destructive queries is sent to writable connection even in readonly mode.
+When `auto_writable` is enabled, destructive queries is sent to writable connection even in slave mode.
 But it does NOT work well on transactions.
 
 Suppose `after_save` callback is set to User model. When `User.create` is called, it proceeds as follows.
@@ -129,13 +129,13 @@ Since only `connection` method is monkey-patched, other connection-related metho
 If you'd like to use those methods, send it to `Model.switch_point_proxy.model_for_connection`.
 
 ## Internals
-There's a proxy which holds two connections: readonly one and writable one.
-A proxy has a thread-local state indicating the current mode: readonly or writable.
+There's a proxy which holds two connections: slave one and writable one.
+A proxy has a thread-local state indicating the current mode: slave or writable.
 
 Each ActiveRecord model refers to a proxy.
 `ActiveRecord::Base.connection` is hooked and delegated to the referred proxy.
 
-When the writable connection is requested to execute destructive query, the readonly connection clears its query cache.
+When the writable connection is requested to execute destructive query, the slave connection clears its query cache.
 
 ![switch_point](https://gyazo.wanko.cc/switch_point.svg)
 
@@ -144,7 +144,7 @@ Basically, each connection managed by a proxy isn't shared between proxies.
 But there's one exception: ActiveRecord::Base.
 
 If `:writable` key is omitted (e.g., Nanika1 model in spec/models), it uses `ActiveRecord::Base.connection` as writable one.
-When `ActiveRecord::Base.connection` is requested to execute destructive query, all readonly connections managed by a proxy which uses `ActiveRecord::Base.connection` as a writable connection clear query cache.
+When `ActiveRecord::Base.connection` is requested to execute destructive query, all slave connections managed by a proxy which uses `ActiveRecord::Base.connection` as a writable connection clear query cache.
 
 ## Contributing
 

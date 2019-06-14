@@ -43,7 +43,7 @@ module SwitchPoint
     end
 
     def with_master(*names, &block)
-      with_mode(:writable, *names, &block)
+      with_mode(:master, *names, &block)
     end
 
     def with_master_all(&block)

@@ -2,11 +2,11 @@
 require 'pry'
 module SwitchPoint
   class Config
-    attr_accessor :auto_writable, :env
-    alias_method :auto_writable?, :auto_writable
+    attr_accessor :auto_master, :env
+    alias_method :auto_master?, :auto_master
 
     def initialize
-      self.auto_writable = false
+      self.auto_master = false
       self.env = :test
     end
 

@@ -7,9 +7,9 @@ RSpec.describe SwitchPoint::Model do
     end
 
     it 'changes connection' do
-      expect(Book).to connect_to('main_readonly.sqlite3')
+      expect(Book).to connect_to('main_slave.sqlite3')
       Book.use_switch_point :comment
-      expect(Book).to connect_to('comment_readonly.sqlite3')
+      expect(Book).to connect_to('comment_slave.sqlite3')
     end
 
     context 'with non-existing switch point name' do
@@ -24,45 +24,45 @@ RSpec.describe SwitchPoint::Model do
   end
 
   describe '.connection' do
-    it 'returns readonly connection by default' do
-      expect(Book).to connect_to('main_readonly.sqlite3')
-      expect(Publisher).to connect_to('main_readonly.sqlite3')
+    it 'returns slave connection by default' do
+      expect(Book).to connect_to('main_slave.sqlite3')
+      expect(Publisher).to connect_to('main_slave.sqlite3')
       expect(User).to connect_to('user.sqlite3')
-      expect(Comment).to connect_to('comment_readonly.sqlite3')
+      expect(Comment).to connect_to('comment_slave.sqlite3')
       expect(Note).to connect_to('default.sqlite3')
-      expect(Book.switch_point_proxy).to be_readonly
+      expect(Book.switch_point_proxy).to be_slave
     end
 
-    context 'when auto_writable is disabled' do
-      it 'raises error when destructive query is requested in readonly mode' do
+    context 'when auto_master is disabled' do
+      it 'raises error when destructive query is requested in slave mode' do
         expect { Book.create }.to raise_error(SwitchPoint::ReadonlyError)
         expect { Book.with_slave { Book.create } }.to raise_error(SwitchPoint::ReadonlyError)
         expect { Book.with_master { Book.create } }.to_not raise_error
       end
     end
 
-    context 'when auto_writable is enabled' do
+    context 'when auto_master is enabled' do
       around do |example|
         SwitchPoint.configure do |config|
-          config.auto_writable = true
+          config.auto_master = true
         end
         example.run
         SwitchPoint.configure do |config|
-          config.auto_writable = false
+          config.auto_master = false
         end
       end
 
-      it 'sends destructive queries to writable' do
+      it 'sends destructive queries to master' do
         expect { Book.create }.to_not raise_error
         expect { Book.with_slave { Book.create } }.to_not raise_error
         Book.with_slave { expect(Book.count).to eq(0) }
         Book.with_master { expect(Book.count).to eq(2) }
       end
 
-      it 'executes after_save callback in readonly mode!' do
+      it 'executes after_save callback in slave mode!' do
         book = Book.new
         expect(book).to receive(:do_after_save) {
-          expect(Book.switch_point_proxy).to be_readonly
+          expect(Book.switch_point_proxy).to be_slave
           expect(Book.connection.open_transactions).to eq(1)
         }
         book.save!
@@ -105,7 +105,7 @@ RSpec.describe SwitchPoint::Model do
     context 'when superclass uses use_switch_point' do
       context 'without use_switch_point in derived class' do
         it 'inherits switch_point configuration' do
-          expect(DerivedNanika1).to connect_to('main_readonly.sqlite3')
+          expect(DerivedNanika1).to connect_to('main_slave.sqlite3')
         end
 
         it 'shares connection with superclass' do
@@ -115,7 +115,7 @@ RSpec.describe SwitchPoint::Model do
 
       context 'with use_switch_point in derived class' do
         it 'overrides superclass' do
-          expect(DerivedNanika2).to connect_to('main2_readonly.sqlite3')
+          expect(DerivedNanika2).to connect_to('main2_slave.sqlite3')
         end
       end
 
@@ -126,14 +126,14 @@ RSpec.describe SwitchPoint::Model do
 
         it 'follows' do
           AbstractNanika.use_switch_point :main2
-          expect(DerivedNanika1).to connect_to('main2_readonly.sqlite3')
+          expect(DerivedNanika1).to connect_to('main2_slave.sqlite3')
         end
       end
     end
 
-    context 'without :writable' do
+    context 'without :master' do
       it 'sends destructive queries to ActiveRecord::Base' do
-        expect(Nanika1).to connect_to('main_readonly.sqlite3')
+        expect(Nanika1).to connect_to('main_slave.sqlite3')
         Nanika1.with_master do
           expect(Nanika1).to connect_to('default.sqlite3')
           expect(Nanika1.connection).to equal(ActiveRecord::Base.connection)
@@ -148,11 +148,11 @@ RSpec.describe SwitchPoint::Model do
       end
     end
 
-    context 'without :readonly' do
-      it 'sends all queries to :writable' do
-        expect(Nanika3).to connect_to('comment_writable.sqlite3')
+    context 'without :slave' do
+      it 'sends all queries to :master' do
+        expect(Nanika3).to connect_to('comment_master.sqlite3')
         Nanika3.with_master do
-          expect(Nanika3).to connect_to('comment_writable.sqlite3')
+          expect(Nanika3).to connect_to('comment_master.sqlite3')
           Nanika3.create
         end
         expect(Nanika3.count).to eq(1)
@@ -164,23 +164,23 @@ RSpec.describe SwitchPoint::Model do
   describe '.with_master' do
     it 'changes connection locally' do
       Book.with_master do
-        expect(Book).to connect_to('main_writable.sqlite3')
-        expect(Book.switch_point_proxy).to be_writable
+        expect(Book).to connect_to('main_master.sqlite3')
+        expect(Book.switch_point_proxy).to be_master
       end
-      expect(Book).to connect_to('main_readonly.sqlite3')
-      expect(Book.switch_point_proxy).to be_readonly
+      expect(Book).to connect_to('main_slave.sqlite3')
+      expect(Book.switch_point_proxy).to be_slave
     end
 
     it 'affects to other models with the same switch point' do
       Book.with_master do
-        expect(Publisher).to connect_to('main_writable.sqlite3')
+        expect(Publisher).to connect_to('main_master.sqlite3')
       end
-      expect(Publisher).to connect_to('main_readonly.sqlite3')
+      expect(Publisher).to connect_to('main_slave.sqlite3')
     end
 
     it 'does not affect to other models with different switch point' do
       Book.with_master do
-        expect(Comment).to connect_to('comment_readonly.sqlite3')
+        expect(Comment).to connect_to('comment_slave.sqlite3')
       end
     end
 
@@ -193,7 +193,7 @@ RSpec.describe SwitchPoint::Model do
     end
 
     context 'with query cache' do
-      context 'when writable connection does only non-destructive operation' do
+      context 'when master connection does only non-destructive operation' do
         it 'keeps readable query cache' do
           # Ensure ActiveRecord::Base.connected? to make Book.cache work
           # See ActiveRecord::QueryCache::ClassMethods#cache
@@ -209,7 +209,7 @@ RSpec.describe SwitchPoint::Model do
         end
       end
 
-      context 'when writable connection does destructive operation' do
+      context 'when master connection does destructive operation' do
         it 'clears readable query cache' do
           # Ensure ActiveRecord::Base.connected? to make Book.cache work
           # See ActiveRecord::QueryCache::ClassMethods#cache
@@ -219,7 +219,7 @@ RSpec.describe SwitchPoint::Model do
             expect(Book.connection.query_cache.size).to eq(1)
             Book.with_master do
               Book.create
-              FileUtils.cp('main_writable.sqlite3', 'main_readonly.sqlite3') # XXX: emulate replication
+              FileUtils.cp('main_master.sqlite3', 'main_slave.sqlite3') # XXX: emulate replication
             end
             expect(Book.connection.query_cache.size).to eq(0)
             expect(Book.count).to eq(1)
@@ -236,9 +236,9 @@ RSpec.describe SwitchPoint::Model do
 
     it 'affects thread-locally' do
       Book.with_master do
-        expect(Book).to connect_to('main_writable.sqlite3')
+        expect(Book).to connect_to('main_master.sqlite3')
         Thread.start do
-          expect(Book).to connect_to('main_readonly.sqlite3')
+          expect(Book).to connect_to('main_slave.sqlite3')
         end.join
       end
     end
@@ -248,46 +248,46 @@ RSpec.describe SwitchPoint::Model do
     it 'behaves like .with_master' do
       book = Book.with_master { Book.create! }
       book.with_master do
-        expect(Book).to connect_to('main_writable.sqlite3')
+        expect(Book).to connect_to('main_master.sqlite3')
       end
-      expect(Book).to connect_to('main_readonly.sqlite3')
+      expect(Book).to connect_to('main_slave.sqlite3')
     end
   end
 
   describe '.with_slave' do
-    context 'when writable! is called globally' do
+    context 'when master! is called globally' do
       before do
-        SwitchPoint.writable!(:main)
+        SwitchPoint.master!(:main)
       end
 
       after do
-        SwitchPoint.readonly!(:main)
+        SwitchPoint.slave!(:main)
       end
 
       it 'locally overwrites global mode' do
         Book.with_slave do
-          expect(Book).to connect_to('main_readonly.sqlite3')
+          expect(Book).to connect_to('main_slave.sqlite3')
         end
-        expect(Book).to connect_to('main_writable.sqlite3')
+        expect(Book).to connect_to('main_master.sqlite3')
       end
     end
   end
 
   describe '#with_slave' do
     before do
-      SwitchPoint.writable!(:main)
+      SwitchPoint.master!(:main)
     end
 
     after do
-      SwitchPoint.readonly!(:main)
+      SwitchPoint.slave!(:main)
     end
 
     it 'behaves like .with_slave' do
       book = Book.create!
       book.with_slave do
-        expect(Book).to connect_to('main_readonly.sqlite3')
+        expect(Book).to connect_to('main_slave.sqlite3')
       end
-      expect(Book).to connect_to('main_writable.sqlite3')
+      expect(Book).to connect_to('main_master.sqlite3')
     end
   end
 
@@ -304,24 +304,24 @@ RSpec.describe SwitchPoint::Model do
 
     it 'switches proxy configuration' do
       Book.switch_point_proxy.switch_name(:comment)
-      expect(Book).to connect_to('comment_readonly.sqlite3')
-      expect(Publisher).to connect_to('comment_readonly.sqlite3')
+      expect(Book).to connect_to('comment_slave.sqlite3')
+      expect(Publisher).to connect_to('comment_slave.sqlite3')
     end
 
     context 'with block' do
       it 'switches proxy configuration locally' do
         Book.switch_point_proxy.switch_name(:comment) do
-          expect(Book).to connect_to('comment_readonly.sqlite3')
-          expect(Publisher).to connect_to('comment_readonly.sqlite3')
+          expect(Book).to connect_to('comment_slave.sqlite3')
+          expect(Publisher).to connect_to('comment_slave.sqlite3')
         end
-        expect(Book).to connect_to('main_readonly.sqlite3')
-        expect(Publisher).to connect_to('main_readonly.sqlite3')
+        expect(Book).to connect_to('main_slave.sqlite3')
+        expect(Publisher).to connect_to('main_slave.sqlite3')
       end
     end
   end
 
   describe '.transaction_with' do
-    context 'when each model has a same writable' do
+    context 'when each model has a same master' do
       before do
         @before_book_count  = Book.count
         @before_book2_count = Book2.count
@@ -354,7 +354,7 @@ RSpec.describe SwitchPoint::Model do
       end
     end
 
-    context 'when each model has a other writable' do
+    context 'when each model has a other master' do
       it {
         expect {
           Book.transaction_with(Book3) do
@@ -365,7 +365,7 @@ RSpec.describe SwitchPoint::Model do
       }
     end
 
-    context 'when raise exception in transaction that include some model, and models each have other writable' do
+    context 'when raise exception in transaction that include some model, and models each have other master' do
       before do
         @before_book_count  = Book.count
         @before_book3_count = Book3.count
@@ -443,7 +443,7 @@ RSpec.describe SwitchPoint::Model do
   end
 
   describe '.cache' do
-    it 'enables query cache for both readonly and writable' do
+    it 'enables query cache for both slave and master' do
       Book.connection
       Book.with_master { Book.connection }
 
@@ -457,7 +457,7 @@ RSpec.describe SwitchPoint::Model do
   end
 
   describe '.uncached' do
-    it 'disables query cache for both readonly and writable' do
+    it 'disables query cache for both slave and master' do
       Book.connection
       Book.with_master { Book.connection }
 
