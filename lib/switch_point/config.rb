@@ -20,7 +20,7 @@ module SwitchPoint
     end
 
     def master_database_name(name)
-      fetch(name)[:masters]
+      fetch(name)[:master]
     end
 
     def slave_database_name(name, index)

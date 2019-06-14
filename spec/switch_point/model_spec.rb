@@ -36,7 +36,7 @@ RSpec.describe SwitchPoint::Model do
     context 'when auto_writable is disabled' do
       it 'raises error when destructive query is requested in readonly mode' do
         expect { Book.create }.to raise_error(SwitchPoint::ReadonlyError)
-        expect { Book.with_readonly { Book.create } }.to raise_error(SwitchPoint::ReadonlyError)
+        expect { Book.with_slave { Book.create } }.to raise_error(SwitchPoint::ReadonlyError)
         expect { Book.with_writable { Book.create } }.to_not raise_error
       end
     end
@@ -54,8 +54,8 @@ RSpec.describe SwitchPoint::Model do
 
       it 'sends destructive queries to writable' do
         expect { Book.create }.to_not raise_error
-        expect { Book.with_readonly { Book.create } }.to_not raise_error
-        Book.with_readonly { expect(Book.count).to eq(0) }
+        expect { Book.with_slave { Book.create } }.to_not raise_error
+        Book.with_slave { expect(Book.count).to eq(0) }
         Book.with_writable { expect(Book.count).to eq(2) }
       end
 
@@ -74,7 +74,7 @@ RSpec.describe SwitchPoint::Model do
         Book.with_writable do
           Book.create
         end
-        Book.with_readonly { expect(Book.count).to eq(0) }
+        Book.with_slave { expect(Book.count).to eq(0) }
         Book.with_writable { expect(Book.count).to eq(1) }
       end.join
     end
@@ -156,7 +156,7 @@ RSpec.describe SwitchPoint::Model do
           Nanika3.create
         end
         expect(Nanika3.count).to eq(1)
-        expect(Nanika3.with_readonly { Nanika3.connection }).to equal(Nanika3.with_writable { Nanika3.connection })
+        expect(Nanika3.with_slave { Nanika3.connection }).to equal(Nanika3.with_writable { Nanika3.connection })
       end
     end
   end
@@ -254,7 +254,7 @@ RSpec.describe SwitchPoint::Model do
     end
   end
 
-  describe '.with_readonly' do
+  describe '.with_slave' do
     context 'when writable! is called globally' do
       before do
         SwitchPoint.writable!(:main)
@@ -265,7 +265,7 @@ RSpec.describe SwitchPoint::Model do
       end
 
       it 'locally overwrites global mode' do
-        Book.with_readonly do
+        Book.with_slave do
           expect(Book).to connect_to('main_readonly.sqlite3')
         end
         expect(Book).to connect_to('main_writable.sqlite3')
@@ -273,7 +273,7 @@ RSpec.describe SwitchPoint::Model do
     end
   end
 
-  describe '#with_readonly' do
+  describe '#with_slave' do
     before do
       SwitchPoint.writable!(:main)
     end
@@ -282,9 +282,9 @@ RSpec.describe SwitchPoint::Model do
       SwitchPoint.readonly!(:main)
     end
 
-    it 'behaves like .with_readonly' do
+    it 'behaves like .with_slave' do
       book = Book.create!
-      book.with_readonly do
+      book.with_slave do
         expect(Book).to connect_to('main_readonly.sqlite3')
       end
       expect(Book).to connect_to('main_writable.sqlite3')

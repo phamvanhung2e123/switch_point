@@ -7,7 +7,7 @@ class TestApp
   def call(env)
     state = {}
     [Nanika1, Nanika2].each do |model|
-      r = model.with_readonly { model.connection.query_cache_enabled }
+      r = model.with_slave { model.connection.query_cache_enabled }
       w = model.with_writable { model.connection.query_cache_enabled }
       state[model.name] = { readonly: r, writable: w }
     end
@@ -30,7 +30,7 @@ RSpec.describe SwitchPoint::QueryCache do
       # The query cache is enabled only when connected.
       # https://github.com/rails/rails/commit/25fc1f584def4c1bc36be805833194d8aee55b3a
       [Nanika1, Nanika2].each do |model|
-        model.with_readonly { model.connection }
+        model.with_slave { model.connection }
         model.with_writable { model.connection }
       end
     end

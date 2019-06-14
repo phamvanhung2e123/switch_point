@@ -13,12 +13,12 @@ module SwitchPoint
       end
     end
 
-    def with_readonly(&block)
-      self.class.with_readonly(&block)
+    def with_slave(&block)
+      self.class.with_slave(&block)
     end
 
-    def with_writable(&block)
-      self.class.with_writable(&block)
+    def with_master(&block)
+      self.class.with_master(&block)
     end
 
     def transaction_with(*models, &block)
@@ -26,17 +26,17 @@ module SwitchPoint
     end
 
     module ClassMethods
-      def with_readonly(&block)
+      def with_slave(&block)
         if switch_point_proxy
-          switch_point_proxy.with_readonly(&block)
+          switch_point_proxy.with_slave(&block)
         else
           raise UnconfiguredError.new("#{name} isn't configured to use switch_point")
         end
       end
 
-      def with_writable(&block)
+      def with_master(&block)
         if switch_point_proxy
-          switch_point_proxy.with_writable(&block)
+          switch_point_proxy.with_master(&block)
         else
           raise UnconfiguredError.new("#{name} isn't configured to use switch_point")
         end

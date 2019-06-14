@@ -126,7 +126,7 @@ ActiveRecord::Base.connection # Create connection
       raise "#{model.name} didn't establish connection lazily!"
     end
   end
-  model.with_readonly do
+  model.with_slave do
     if model.switch_point_proxy.connected?
       raise "#{model.name} didn't establish connection lazily!"
     end

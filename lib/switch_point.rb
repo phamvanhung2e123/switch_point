@@ -34,12 +34,12 @@ module SwitchPoint
       ProxyRepository.checkout(name).writable!
     end
 
-    def with_readonly(*names, &block)
-      with_mode(:readonly, *names, &block)
+    def with_slave(*names, &block)
+      with_mode(:slave, *names, &block)
     end
 
-    def with_readonly_all(&block)
-      with_readonly(*config.keys, &block)
+    def with_slave_all(&block)
+      with_slave(*config.keys, &block)
     end
 
     def with_writable(*names, &block)

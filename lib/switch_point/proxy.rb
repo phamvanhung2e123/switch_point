@@ -6,8 +6,8 @@ module SwitchPoint
   class Proxy
     attr_reader :initial_name
 
-    AVAILABLE_MODES = %i[writable readonly].freeze
-    DEFAULT_MODE = :writable
+    AVAILABLE_MODES = %i[master slave].freeze
+    DEFAULT_MODE = :slave
 
     def initialize(name)
       @initial_name = name
@@ -57,36 +57,36 @@ module SwitchPoint
       thread_local_mode || @global_mode
     end
 
-    def readonly!
+    def slave!
       if thread_local_mode
-        self.thread_local_mode = :readonly
+        self.thread_local_mode = :slave
       else
-        @global_mode = :readonly
+        @global_mode = :slave
       end
     end
 
-    def readonly?
-      mode == :readonly
+    def slave?
+      mode == :slave
     end
 
-    def writable!
+    def master!
       if thread_local_mode
-        self.thread_local_mode = :writable
+        self.thread_local_mode = :master
       else
-        @global_mode = :writable
+        @global_mode = :master
       end
     end
 
-    def writable?
-      mode == :writable
+    def master?
+      mode == :master
     end
 
-    def with_readonly(&block)
-      with_mode(:readonly, &block)
+    def with_slave(&block)
+      with_mode(:slave, &block)
     end
 
-    def with_writable(&block)
-      with_mode(:writable, &block)
+    def with_master(&block)
+      with_mode(:master, &block)
     end
 
     def with_mode(new_mode, &block)
@@ -123,9 +123,9 @@ module SwitchPoint
       model_name = SwitchPoint.config.model_name(@current_name, mode)
       if model_name
         Proxy.const_get(model_name)
-      elsif mode == :readonly
+      elsif mode == :slave
         # When only writable is specified, re-use writable connection.
-        with_writable do
+        with_slave do
           model_for_connection
         end
       else
@@ -142,14 +142,14 @@ module SwitchPoint
     end
 
     def cache(&block)
-      r = with_readonly { model_for_connection }
-      w = with_writable { model_for_connection }
+      r = with_slave { model_for_connection }
+      w = with_master { model_for_connection }
       r.cache { w.cache(&block) }
     end
 
     def uncached(&block)
-      r = with_readonly { model_for_connection }
-      w = with_writable { model_for_connection }
+      r = with_slave { model_for_connection }
+      w = with_master { model_for_connection }
       r.uncached { w.uncached(&block) }
     end
   end
