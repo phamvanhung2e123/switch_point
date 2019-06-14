@@ -31,6 +31,7 @@ module SwitchPoint
       if mode == :master
         master_model_name(name)
       else
+        return unless slave_exist?(name)
         slave_mode_name(name, rand(slave_count(name)))
       end
     end
@@ -45,7 +46,12 @@ module SwitchPoint
       "#{name}_slave_index_#{index}".camelize
     end
 
+    def slave_exist?(name)
+      fetch(name).key?(:slaves)
+    end
+
     def slave_count(name)
+      return 0 unless slave_exist?(name)
       fetch(name)[:slaves].count
     end
 

@@ -7,7 +7,7 @@ module SwitchPoint
     attr_reader :initial_name
 
     AVAILABLE_MODES = %i[master slave].freeze
-    DEFAULT_MODE = :slave
+    DEFAULT_MODE = :master
 
     def initialize(name)
       @initial_name = name
@@ -30,6 +30,7 @@ module SwitchPoint
     end
 
     def define_slave_model(name)
+      return unless SwitchPoint.config.slave_exist?(name)
       slave_count = SwitchPoint.config.slave_count(name)
       (0..(slave_count-1)).each do |index|
         model_name = SwitchPoint.config.slave_mode_name(name, index)
@@ -125,7 +126,7 @@ module SwitchPoint
         Proxy.const_get(model_name)
       elsif mode == :slave
         # When only writable is specified, re-use writable connection.
-        with_slave do
+        with_master do
           model_for_connection
         end
       else
