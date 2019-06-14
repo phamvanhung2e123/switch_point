@@ -61,7 +61,7 @@ RSpec.configure do |config|
   end
 
   config.after(:suite) do
-    ActiveRecord::Base.configurations.each_value do |c|
+    ActiveRecord::Base.configurations[SwitchPoint.config.env].each_value do |c|
       FileUtils.rm_f(c[:database])
     end
   end
