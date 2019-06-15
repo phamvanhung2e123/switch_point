@@ -17,9 +17,11 @@ SwitchPoint.configure do |config|
     slaves: [:main_slave_special],
     master: :main_master
   config.define_switch_point :nanika1,
-    slaves: [:main_slave]
+    slaves: [:main_slave],
+    master: :main_master
   config.define_switch_point :nanika2,
-    slaves: [:main_slave]
+    slaves: [:main_slave],
+    master: :main_master
   config.define_switch_point :nanika3,
     master: :comment_master
 end

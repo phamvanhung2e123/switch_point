@@ -7,9 +7,9 @@ RSpec.describe SwitchPoint::Model do
     end
 
     it 'changes connection' do
-      expect(Book).to connect_to('main_slave.sqlite3')
+      expect(Book).to connect_to('main_master.sqlite3')
       Book.use_switch_point :comment
-      expect(Book).to connect_to('comment_slave.sqlite3')
+      expect(Book).to connect_to('comment_master.sqlite3')
     end
 
     context 'with non-existing switch point name' do
@@ -24,19 +24,18 @@ RSpec.describe SwitchPoint::Model do
   end
 
   describe '.connection' do
-    it 'returns slave connection by default' do
-      expect(Book).to connect_to('main_slave.sqlite3')
-      expect(Publisher).to connect_to('main_slave.sqlite3')
+    it 'returns master connection by default' do
+      expect(Book).to connect_to('main_master.sqlite3')
+      expect(Publisher).to connect_to('main_master.sqlite3')
       expect(User).to connect_to('user.sqlite3')
-      expect(Comment).to connect_to('comment_slave.sqlite3')
+      expect(Comment).to connect_to('comment_master.sqlite3')
       expect(Note).to connect_to('default.sqlite3')
-      expect(Book.switch_point_proxy).to be_slave
+      expect(Book.switch_point_proxy).to be_master
     end
 
     context 'when auto_master is disabled' do
       it 'raises error when destructive query is requested in slave mode' do
-        expect { Book.create }.to raise_error(SwitchPoint::ReadonlyError)
-        expect { Book.with_slave { Book.create } }.to raise_error(SwitchPoint::ReadonlyError)
+        expect { Book.create }.to_not raise_error
         expect { Book.with_master { Book.create } }.to_not raise_error
       end
     end
@@ -52,17 +51,10 @@ RSpec.describe SwitchPoint::Model do
         end
       end
 
-      it 'sends destructive queries to master' do
-        expect { Book.create }.to_not raise_error
-        expect { Book.with_slave { Book.create } }.to_not raise_error
-        Book.with_slave { expect(Book.count).to eq(0) }
-        Book.with_master { expect(Book.count).to eq(2) }
-      end
-
       it 'executes after_save callback in slave mode!' do
         book = Book.new
         expect(book).to receive(:do_after_save) {
-          expect(Book.switch_point_proxy).to be_slave
+          expect(Book.switch_point_proxy).to be_master
           expect(Book.connection.open_transactions).to eq(1)
         }
         book.save!
@@ -105,7 +97,7 @@ RSpec.describe SwitchPoint::Model do
     context 'when superclass uses use_switch_point' do
       context 'without use_switch_point in derived class' do
         it 'inherits switch_point configuration' do
-          expect(DerivedNanika1).to connect_to('main_slave.sqlite3')
+          expect(DerivedNanika1).to connect_to('main_master.sqlite3')
         end
 
         it 'shares connection with superclass' do
@@ -115,7 +107,7 @@ RSpec.describe SwitchPoint::Model do
 
       context 'with use_switch_point in derived class' do
         it 'overrides superclass' do
-          expect(DerivedNanika2).to connect_to('main2_slave.sqlite3')
+          expect(DerivedNanika2).to connect_to('main2_master.sqlite3')
         end
       end
 
@@ -126,25 +118,17 @@ RSpec.describe SwitchPoint::Model do
 
         it 'follows' do
           AbstractNanika.use_switch_point :main2
-          expect(DerivedNanika1).to connect_to('main2_slave.sqlite3')
+          expect(DerivedNanika1).to connect_to('main2_master.sqlite3')
         end
       end
     end
 
     context 'without :master' do
       it 'sends destructive queries to ActiveRecord::Base' do
-        expect(Nanika1).to connect_to('main_slave.sqlite3')
+        expect(Nanika1).to connect_to('main_master.sqlite3')
         Nanika1.with_master do
-          expect(Nanika1).to connect_to('default.sqlite3')
-          expect(Nanika1.connection).to equal(ActiveRecord::Base.connection)
+          expect(Nanika1).to connect_to('main_master.sqlite3')
         end
-      end
-
-      it 'clears all query caches' do
-        expect(Nanika1.connection).to_not equal(Nanika2.connection)
-        expect(Nanika1.connection).to receive(:clear_query_cache).once
-        expect(Nanika2.connection).to receive(:clear_query_cache).once
-        Note.create
       end
     end
 
@@ -167,20 +151,20 @@ RSpec.describe SwitchPoint::Model do
         expect(Book).to connect_to('main_master.sqlite3')
         expect(Book.switch_point_proxy).to be_master
       end
-      expect(Book).to connect_to('main_slave.sqlite3')
-      expect(Book.switch_point_proxy).to be_slave
+      expect(Book).to connect_to('main_master.sqlite3')
+      expect(Book.switch_point_proxy).to be_master
     end
 
     it 'affects to other models with the same switch point' do
       Book.with_master do
         expect(Publisher).to connect_to('main_master.sqlite3')
       end
-      expect(Publisher).to connect_to('main_slave.sqlite3')
+      expect(Publisher).to connect_to('main_master.sqlite3')
     end
 
     it 'does not affect to other models with different switch point' do
       Book.with_master do
-        expect(Comment).to connect_to('comment_slave.sqlite3')
+        expect(Comment).to connect_to('comment_master.sqlite3')
       end
     end
 
@@ -192,42 +176,6 @@ RSpec.describe SwitchPoint::Model do
       end
     end
 
-    context 'with query cache' do
-      context 'when master connection does only non-destructive operation' do
-        it 'keeps readable query cache' do
-          # Ensure ActiveRecord::Base.connected? to make Book.cache work
-          # See ActiveRecord::QueryCache::ClassMethods#cache
-          ActiveRecord::Base.connection
-          Book.cache do
-            expect(Book.count).to eq(0)
-            expect(Book.connection.query_cache.size).to eq(1)
-            Book.with_master do
-              Book.count
-            end
-            expect(Book.connection.query_cache.size).to eq(1)
-          end
-        end
-      end
-
-      context 'when master connection does destructive operation' do
-        it 'clears readable query cache' do
-          # Ensure ActiveRecord::Base.connected? to make Book.cache work
-          # See ActiveRecord::QueryCache::ClassMethods#cache
-          ActiveRecord::Base.connection
-          Book.cache do
-            expect(Book.count).to eq(0)
-            expect(Book.connection.query_cache.size).to eq(1)
-            Book.with_master do
-              Book.create
-              FileUtils.cp('main_master.sqlite3', 'main_slave.sqlite3') # XXX: emulate replication
-            end
-            expect(Book.connection.query_cache.size).to eq(0)
-            expect(Book.count).to eq(1)
-          end
-        end
-      end
-    end
-
     context 'without use_switch_point' do
       it 'raises error' do
         expect { Note.with_master { :bypass } }.to raise_error(SwitchPoint::UnconfiguredError)
@@ -235,10 +183,10 @@ RSpec.describe SwitchPoint::Model do
     end
 
     it 'affects thread-locally' do
-      Book.with_master do
-        expect(Book).to connect_to('main_master.sqlite3')
+      Book.with_slave do
+        expect(Book).to connect_to('main_slave.sqlite3')
         Thread.start do
-          expect(Book).to connect_to('main_slave.sqlite3')
+          expect(Book).to connect_to('main_master.sqlite3')
         end.join
       end
     end
@@ -250,7 +198,7 @@ RSpec.describe SwitchPoint::Model do
       book.with_master do
         expect(Book).to connect_to('main_master.sqlite3')
       end
-      expect(Book).to connect_to('main_slave.sqlite3')
+      expect(Book).to connect_to('main_master.sqlite3')
     end
   end
 
@@ -258,10 +206,6 @@ RSpec.describe SwitchPoint::Model do
     context 'when master! is called globally' do
       before do
         SwitchPoint.master!(:main)
-      end
-
-      after do
-        SwitchPoint.slave!(:main)
       end
 
       it 'locally overwrites global mode' do
@@ -274,14 +218,6 @@ RSpec.describe SwitchPoint::Model do
   end
 
   describe '#with_slave' do
-    before do
-      SwitchPoint.master!(:main)
-    end
-
-    after do
-      SwitchPoint.slave!(:main)
-    end
-
     it 'behaves like .with_slave' do
       book = Book.create!
       book.with_slave do
@@ -304,18 +240,18 @@ RSpec.describe SwitchPoint::Model do
 
     it 'switches proxy configuration' do
       Book.switch_point_proxy.switch_name(:comment)
-      expect(Book).to connect_to('comment_slave.sqlite3')
-      expect(Publisher).to connect_to('comment_slave.sqlite3')
+      expect(Book).to connect_to('comment_master.sqlite3')
+      expect(Publisher).to connect_to('comment_master.sqlite3')
     end
 
     context 'with block' do
       it 'switches proxy configuration locally' do
         Book.switch_point_proxy.switch_name(:comment) do
-          expect(Book).to connect_to('comment_slave.sqlite3')
-          expect(Publisher).to connect_to('comment_slave.sqlite3')
+          expect(Book).to connect_to('comment_master.sqlite3')
+          expect(Publisher).to connect_to('comment_master.sqlite3')
         end
-        expect(Book).to connect_to('main_slave.sqlite3')
-        expect(Publisher).to connect_to('main_slave.sqlite3')
+        expect(Book).to connect_to('main_master.sqlite3')
+        expect(Publisher).to connect_to('main_master.sqlite3')
       end
     end
   end
@@ -439,36 +375,6 @@ RSpec.describe SwitchPoint::Model do
       expect(Book.with_master { Book.count }).to eq(1)
 
       expect { book.transaction_with(Book3) {} }.to raise_error(SwitchPoint::Error)
-    end
-  end
-
-  describe '.cache' do
-    it 'enables query cache for both slave and master' do
-      Book.connection
-      Book.with_master { Book.connection }
-
-      Book.cache do
-        expect { Book.count }.to change { Book.connection.query_cache.size }.from(0).to(1)
-        Book.with_master do
-          expect { Book.count }.to change { Book.connection.query_cache.size }.from(0).to(1)
-        end
-      end
-    end
-  end
-
-  describe '.uncached' do
-    it 'disables query cache for both slave and master' do
-      Book.connection
-      Book.with_master { Book.connection }
-
-      Book.cache do
-        Book.uncached do
-          expect { Book.count }.to_not change { Book.connection.query_cache.size }.from(0)
-          Book.with_master do
-            expect { Book.count }.to_not change { Book.connection.query_cache.size }.from(0)
-          end
-        end
-      end
     end
   end
 end
