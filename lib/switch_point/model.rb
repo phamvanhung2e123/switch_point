@@ -21,6 +21,10 @@ module SwitchPoint
       self.class.with_master(&block)
     end
 
+    def with_db(&block)
+      self.class.with_db(&block)
+    end
+
     def transaction_with(*models, &block)
       self.class.transaction_with(*models, &block)
     end
@@ -44,12 +48,34 @@ module SwitchPoint
 
       def use_switch_point(name)
         assert_existing_switch_point!(name)
-        @switch_point_name = name
+        @global_switch_point_name = name
       end
 
+      def with_db(new_switch_point_name, &block)
+        saved_switch_point_name = thread_local_switch_point_name
+        self.thread_local_switch_point_name = new_switch_point_name
+        block.call
+      ensure
+        self.thread_local_switch_point_name = saved_switch_point_name
+      end
+
+      def switch_point_name
+        thread_local_switch_point_name || @global_switch_point_name
+      end
+
+      def thread_local_switch_point_name
+        Thread.current[:"thread_local_#{self.name}_switch_point_name"]
+      end
+
+      def thread_local_switch_point_name=(name)
+        Thread.current[:"thread_local_#{self.name}_switch_point_name"] = name
+      end
+
+      private :thread_local_switch_point_name=
+
       def switch_point_proxy
-        if defined?(@switch_point_name)
-          ProxyRepository.checkout(@switch_point_name)
+        if switch_point_name
+          ProxyRepository.checkout(switch_point_name)
         elsif self == ActiveRecord::Base
           nil
         else
@@ -75,9 +101,9 @@ module SwitchPoint
 
       def can_transaction_with?(*models)
         master_switch_points = [self, *models].map do |model|
-          if model.instance_variable_defined?(:@switch_point_name)
+          if model.switch_point_name
             SwitchPoint.config.model_name(
-              model.instance_variable_get(:@switch_point_name),
+              model.switch_point_name,
               :master
             )
           end

@@ -155,6 +155,19 @@ RSpec.describe SwitchPoint::Model do
       expect(Book.switch_point_proxy).to be_master
     end
 
+    it 'changes connection locally' do
+      Book.with_db(:comment) do
+        expect(Book.switch_point_proxy).to be_master
+        expect(Book).to connect_to('comment_master.sqlite3')
+        Thread.start do
+          expect(Book).to connect_to('main_master.sqlite3')
+        end.join
+      end
+
+      expect(Book.switch_point_proxy).to be_master
+      expect(Book).to connect_to('main_master.sqlite3')
+    end
+
     it 'affects to other models with the same switch point' do
       Book.with_master do
         expect(Publisher).to connect_to('main_master.sqlite3')
