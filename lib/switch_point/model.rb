@@ -21,8 +21,8 @@ module SwitchPoint
       self.class.with_master(&block)
     end
 
-    def with_db(&block)
-      self.class.with_db(&block)
+    def with_switch_point(&block)
+      self.class.with_switch_point(&block)
     end
 
     def transaction_with(*models, &block)
@@ -51,7 +51,7 @@ module SwitchPoint
         @global_switch_point_name = name
       end
 
-      def with_db(new_switch_point_name, &block)
+      def with_switch_point(new_switch_point_name, &block)
         saved_switch_point_name = thread_local_switch_point_name
         self.thread_local_switch_point_name = new_switch_point_name
         block.call
