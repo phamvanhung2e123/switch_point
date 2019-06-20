@@ -30,6 +30,10 @@ module SwitchPoint
     end
 
     module ClassMethods
+      def on_master
+        self
+      end
+
       def with_slave(&block)
         if switch_point_proxy
           switch_point_proxy.with_slave(&block)
