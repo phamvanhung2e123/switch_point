@@ -38,12 +38,12 @@ module SwitchPoint
 
     def master_model_name(name)
       if fetch(name)[:master]
-        "#{name}_master".camelize
+        "#{name.to_s.gsub(/\W+/, '_').camelize}_master".camelize
       end
     end
 
     def slave_mode_name(name, index)
-      "#{name}_slave_index_#{index}".camelize
+      "#{name.to_s.gsub(/\W+/, '_').camelize}_slave_index_#{index}".camelize
     end
 
     def slave_exist?(name)

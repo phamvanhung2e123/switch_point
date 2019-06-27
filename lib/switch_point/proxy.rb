@@ -22,7 +22,7 @@ module SwitchPoint
       if model_name
         model = Class.new(ActiveRecord::Base)
         Proxy.const_set(model_name, model)
-        model.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env][SwitchPoint.config.master_database_name(name).to_s])
+        model.establish_connection(self.db_specific(SwitchPoint.config.master_database_name(name)))
         model
       else
         ActiveRecord::Base
@@ -37,11 +37,20 @@ module SwitchPoint
         if model_name
           model = Class.new(ActiveRecord::Base)
           Proxy.const_set(model_name, model)
-          model.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env][SwitchPoint.config.slave_database_name(name, index).to_s])
+          model.establish_connection(self.db_specific(SwitchPoint.config.slave_database_name(name, index)))
           model
         else
           ActiveRecord::Base
         end
+      end
+    end
+
+    def db_specific(db_name)
+      base_config = ::ActiveRecord::Base.configurations.fetch(SwitchPoint.config.env)
+      if db_name == :default
+        return base_config
+      else
+        return db_name.to_s.split(".").inject(base_config) {|h, n| h[n]}
       end
     end
 
