@@ -25,6 +25,7 @@ RSpec.describe SwitchPoint::Model do
 
   describe '.connection' do
     it 'returns master connection by default' do
+      binding.pry
       expect(Book).to connect_to('main_master.sqlite3')
       expect(Publisher).to connect_to('main_master.sqlite3')
       expect(User).to connect_to('user.sqlite3')

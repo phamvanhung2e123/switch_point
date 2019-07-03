@@ -120,7 +120,9 @@ module SwitchPoint
     module MonkeyPatch
       def connection
         if switch_point_proxy
-          switch_point_proxy.connection
+          connection = switch_point_proxy.connection
+          connection.connection_name = switch_point_name
+          connection
         else
           super
         end
