@@ -2,7 +2,7 @@
 
 lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'switch_point/version'
+require 'switch_connection/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'switch_point'

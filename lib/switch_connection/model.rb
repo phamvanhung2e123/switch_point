@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'switch_point/error'
-require 'switch_point/proxy_repository'
+require 'switch_connection/error'
+require 'switch_connection/proxy_repository'
 
 module SwitchPoint
   module Model

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'switch_point/error'
+require 'switch_connection/error'
 
 module SwitchPoint
   class Proxy

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'benchmark/ips'
-require 'switch_point'
+require 'switch_connection'
 require 'active_record'
 
 SwitchPoint.configure do |config|

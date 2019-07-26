@@ -14,7 +14,7 @@ SimpleCov.start do
   add_filter File.dirname(__FILE__)
 end
 
-require 'switch_point'
+require 'switch_connection'
 require 'models'
 
 RSpec.configure do |config|
