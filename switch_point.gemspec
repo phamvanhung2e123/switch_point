@@ -32,4 +32,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop', '>= 0.50.0'
   spec.add_development_dependency 'simplecov', '>= 0.9.0'
   spec.add_dependency 'activerecord', '>= 3.2.0'
+  spec.add_dependency 'log_connection_name', '>= 0.1.0'
 end

@@ -62,8 +62,6 @@ module SwitchPoint
 end
 ActiveSupport.on_load(:active_record) do
   require 'switch_point/model'
-  require 'switch_point/abstract_adapter'
   ActiveRecord::Base.logger = Logger.new STDOUT
   ActiveRecord::Base.include(SwitchPoint::Model)
-  ActiveRecord::ConnectionAdapters::AbstractAdapter.send(:include, SwitchPoint::AbstractAdapter::ConnectionName)
 end
