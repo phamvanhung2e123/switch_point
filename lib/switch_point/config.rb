@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require 'pry'
 module SwitchPoint
   class Config
     attr_accessor :auto_master, :env
