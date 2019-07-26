@@ -6,7 +6,7 @@ require 'switch_connection/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'switch_point'
-  spec.version       = SwitchPoint::VERSION
+  spec.version       = SwitchConnection::VERSION
   spec.authors       = ['Kohei Suzuki']
   spec.email         = ['eagletmt@gmail.com']
   spec.summary       = 'Switching database connection between readonly one and writable one.'

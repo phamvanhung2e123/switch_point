@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module SwitchPoint
+module SwitchConnection
   class Error < StandardError
   end
 

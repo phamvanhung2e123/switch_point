@@ -3,7 +3,7 @@
 require 'switch_connection/error'
 require 'switch_connection/proxy_repository'
 
-module SwitchPoint
+module SwitchConnection
   module Model
     def self.included(model)
       super
@@ -96,13 +96,13 @@ module SwitchPoint
       private
 
       def assert_existing_switch_point!(name)
-        SwitchPoint.config.fetch(name)
+        SwitchConnection.config.fetch(name)
       end
 
       def can_transaction_with?(*models)
         master_switch_points = [self, *models].map do |model|
           if model.switch_point_name
-            SwitchPoint.config.model_name(
+            SwitchConnection.config.model_name(
               model.switch_point_name,
               :master
             )

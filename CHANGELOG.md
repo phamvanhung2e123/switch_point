@@ -10,14 +10,14 @@
 - `Model.with_readonly` and `Model.with_writable` now raises error when the Model doesn't use switch_point
 
 ## 0.6.0 (2015-04-14)
-- Add `SwitchPoint::QueryCache` middleware
+- Add `SwitchConnection::QueryCache` middleware
 - `Model.cache` and `Model.uncached` is now hooked by switch_point
     - `Model.cache` enables query cache for both readonly and writable.
     - `Model.uncached` disables query cache for both readonly and writable.
-- Add `SwitchPoint.with_readonly_all` and `SwitchPoint.with_writable_all` as shorthand
+- Add `SwitchConnection.with_readonly_all` and `SwitchConnection.with_writable_all` as shorthand
 
 ## 0.5.0 (2014-11-05)
-- Rename `SwitchPoint.with_connection` to `SwitchPoint.with_mode`
+- Rename `SwitchConnection.with_connection` to `SwitchConnection.with_mode`
     - To avoid confusion with `ActiveRecord::ConnectionPool#with_connection`
 - Inherit superclass' switch_point configuration
 
@@ -38,7 +38,7 @@
 ## 0.4.0 (2014-06-17)
 - auto_writable is disabled by default
     - To restore the previous behavior, set `config.auto_writable = true`.
-- Add shorthand methods `SwitchPoint.with_readonly`, `SwitchPoint.with_writable`
+- Add shorthand methods `SwitchConnection.with_readonly`, `SwitchConnection.with_writable`
 
 ## 0.3.1 (2014-06-04)
 - Support defaulting to writable ActiveRecord::Base connection

@@ -4,7 +4,7 @@ require 'benchmark/ips'
 require 'switch_connection'
 require 'active_record'
 
-SwitchPoint.configure do |config|
+SwitchConnection.configure do |config|
   config.define_switch_point :proxy,
     slave: :proxy_slave,
     master: :proxy_master
