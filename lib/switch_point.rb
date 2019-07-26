@@ -62,6 +62,5 @@ module SwitchPoint
 end
 ActiveSupport.on_load(:active_record) do
   require 'switch_point/model'
-  ActiveRecord::Base.logger = Logger.new STDOUT
   ActiveRecord::Base.include(SwitchPoint::Model)
 end

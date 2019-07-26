@@ -10,6 +10,15 @@ RSpec.describe SwitchPoint::Model do
       expect(Book).to connect_to('main_master.sqlite3')
       Book.use_switch_point :comment
       expect(Book).to connect_to('comment_master.sqlite3')
+
+      Thread.start do
+        Book.with_switch_point(:main) do
+          expect(Book).to connect_to('main_master.sqlite3')
+        end
+        Book.with_switch_point(:comment) do
+          expect(Book).to connect_to('comment_master.sqlite3')
+        end
+      end.join
     end
 
     context 'with non-existing switch point name' do
