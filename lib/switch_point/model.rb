@@ -21,8 +21,8 @@ module SwitchPoint
       self.class.with_master(&block)
     end
 
-    def with_switch_point(&block)
-      self.class.with_switch_point(&block)
+    def with_switch_point(new_switch_point_name, &block)
+      self.class.with_switch_point(new_switch_point_name, &block)
     end
 
     def transaction_with(*models, &block)
@@ -30,10 +30,6 @@ module SwitchPoint
     end
 
     module ClassMethods
-      def on_master
-        self
-      end
-
       def with_slave(&block)
         if switch_point_proxy
           switch_point_proxy.with_slave(&block)
