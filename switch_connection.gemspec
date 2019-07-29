@@ -5,13 +5,13 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'switch_connection/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'switch_point'
+  spec.name          = 'switch_connection'
   spec.version       = SwitchConnection::VERSION
   spec.authors       = ['Kohei Suzuki']
   spec.email         = ['eagletmt@gmail.com']
   spec.summary       = 'Switching database connection between readonly one and writable one.'
   spec.description   = 'Switching database connection between readonly one and writable one.'
-  spec.homepage      = 'https://github.com/eagletmt/switch_point'
+  spec.homepage      = 'https://github.com/phamvanhungmixi/switch_point'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0")
