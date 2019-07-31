@@ -92,7 +92,7 @@ base =
   if RUBY_PLATFORM == 'java'
     { adapter: 'jdbcsqlite3' }
   else
-    { adapter: 'sqlite3' }
+    { adapter: 'sqlite3', pool: 10 }
   end
 
 databases = {
