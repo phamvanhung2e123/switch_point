@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['eagletmt@gmail.com']
   spec.summary       = 'Switching database connection between readonly one and writable one.'
   spec.description   = 'Switching database connection between readonly one and writable one.'
-  spec.homepage      = 'https://github.com/eagletmt/switch_point'
+  spec.homepage      = 'https://github.com/phamvanhung2e123/switch_point'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0")
