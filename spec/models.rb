@@ -116,7 +116,7 @@ ActiveRecord::Base.configurations =
     databases
   end
 
-default_database_config = ActiveRecord::Base.configurations[SwitchPoint.config.env]["default"]
+default_database_config = ActiveRecord::Base.configurations[SwitchPoint.config.env]['default']
 ActiveRecord::Base.establish_connection(default_database_config)
 
 # XXX: Check connection laziness

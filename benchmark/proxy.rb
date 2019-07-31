@@ -6,7 +6,7 @@ require 'active_record'
 
 SwitchPoint.configure do |config|
   config.define_switch_point :proxy,
-                             slaves: [:proxy_slave]
+                             slaves: [:proxy_slave],
                              master: :proxy_master
 end
 

@@ -32,6 +32,7 @@ module SwitchPoint
 
     def define_slave_model(name)
       return unless SwitchPoint.config.slave_exist?(name)
+
       slave_count = SwitchPoint.config.slave_count(name)
       (0..(slave_count - 1)).each do |index|
         model_name = SwitchPoint.config.slave_mode_name(name, index)
@@ -39,16 +40,15 @@ module SwitchPoint
 
         model = Class.new(ActiveRecord::Base)
         Proxy.const_set(model_name, model)
-        slave_database_name = SwitchPoint.config.slave_database_name(name, index)
-        model.establish_connection(db_specific(slave_database_name))
-        model
+        model.establish_connection(db_specific(SwitchPoint.config.slave_database_name(name, index)))
       end
     end
 
     def db_specific(db_name)
       base_config = ::ActiveRecord::Base.configurations.fetch(SwitchPoint.config.env)
       return base_config if db_name == :default
-      db_name.to_s.split(".").inject(base_config) { |h, n| h[n] }
+
+      db_name.to_s.split('.').inject(base_config) { |h, n| h[n] }
     end
 
     def thread_local_mode
@@ -100,6 +100,7 @@ module SwitchPoint
       unless AVAILABLE_MODES.include?(new_mode)
         raise ArgumentError.new("Unknown mode: #{new_mode}")
       end
+
       saved_mode = thread_local_mode
       self.thread_local_mode = new_mode
       block.call

@@ -10,9 +10,19 @@ Performance/RedundantBlockCall:
 Layout/AlignParameters:
   Enabled: false
 
+LineLength:
+  Max: 100
+
+Metrics:
+  Enabled: false
+
 Naming/FileName:
   Exclude:
     - Appraisals
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
 
 Style/AccessModifierDeclarations:
   Enabled: false
@@ -44,10 +54,7 @@ Style/TrailingCommaInArrayLiteral:
   Enabled: false
 Style/TrailingCommaInHashLiteral:
   Enabled: false
-Metrics:
-  Enabled: false
-LineLength:
-  Max: 100
-Metrics/BlockLength:
+Style/FrozenStringLiteralComment:
   Exclude:
-    - 'spec/**/*'
+    - "gemfiles/*.gemfile"
+    - "Appraisals"

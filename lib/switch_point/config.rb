@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module SwitchPoint
   class Config
     attr_accessor :auto_master, :env
@@ -31,6 +32,7 @@ module SwitchPoint
         master_model_name(name)
       else
         return unless slave_exist?(name)
+
         slave_mode_name(name, rand(slave_count(name)))
       end
     end
@@ -49,6 +51,7 @@ module SwitchPoint
 
     def slave_count(name)
       return 0 unless slave_exist?(name)
+
       fetch(name)[:slaves].count
     end
 
@@ -72,16 +75,17 @@ module SwitchPoint
 
     def assert_valid_config!(config)
       unless config.key?(:master) || config.key?(:slaves)
-        raise ArgumentError, ':master or :slaves must be specified'
+        raise ArgumentError.new(':master or :slaves must be specified')
       end
+
       if config.key?(:slaves)
         unless config[:slaves].is_a?(Array)
-          raise TypeError, ":slaves's value must be Array"
+          raise TypeError.new(":slaves's value must be Array")
         end
       end
       if config.key?(:master)
         unless config[:master].is_a?(Symbol)
-          raise TypeError, ":master's value must be "
+          raise TypeError.new(":master's value must be ")
         end
       end
       nil

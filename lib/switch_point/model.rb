@@ -102,6 +102,7 @@ module SwitchPoint
       def can_transaction_with?(*models)
         master_switch_points = [self, *models].map do |model|
           next unless model.switch_point_name
+
           SwitchPoint.config.model_name(
             model.switch_point_name,
             :master
