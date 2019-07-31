@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'benchmark/ips'
-require 'switch_point'
+require 'switch_connection'
 require 'active_record'
-SwitchPoint.configure do |config|
+SwitchConnection.configure do |config|
   config.define_switch_point :proxy,
                              slaves: [:proxy_slave],
                              master: :proxy_master
@@ -40,7 +40,7 @@ ActiveRecord::Base.configurations =
   else
     databases
   end
-ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env]['default'])
+ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations[SwitchConnection.config.env]['default'])
 
 Plain.connection.execute('CREATE TABLE plains (id integer primary key autoincrement)')
 %i[slave master].each do |mode|

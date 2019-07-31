@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'singleton'
-require 'switch_point/proxy'
+require 'switch_connection/proxy'
 
-module SwitchPoint
+module SwitchConnection
   class ProxyRepository
     include Singleton
 

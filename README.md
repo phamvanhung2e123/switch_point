@@ -1,4 +1,4 @@
-# SwitchPoint
+# SwitchConnection
 [![Gem Version](https://badge.fury.io/rb/switch_point.svg)](http://badge.fury.io/rb/switch_point)
 [![Build Status](https://travis-ci.org/phamvanhung2e123/switch_point.svg?branch=master)](https://travis-ci.org/phamvannhung22123/switch_point)
 [![Coverage Status](https://img.shields.io/coveralls/phamvanhung2e123/switch_point.svg?branch=master)](https://coveralls.io/r/phamvannhung2e123/switch_point?branch=master)
@@ -43,7 +43,7 @@ production_comment_master:
 In initializer:
 
 ```ruby
-SwitchPoint.configure do |config|
+SwitchConnection.configure do |config|
   config.define_switch_point :blog,
     slave: :"#{Rails.env}_blog_slave",
     writable: :"#{Rails.env}_blog_master"
@@ -93,16 +93,16 @@ Note that Article and Category shares their connections.
 `Model.cache` and `Model.uncached` enables/disables query cache for both
 slave connection and writable connection.
 
-switch_point also provide a rack middleware `SwitchPoint::QueryCache` similar
+switch_point also provide a rack middleware `SwitchConnection::QueryCache` similar
 to `ActiveRecord::QueryCache`. It enables query cache for all models using
 switch_point.
 
 ```ruby
-# Replace ActiveRecord::QueryCache with SwitchPoint::QueryCache
-config.middleware.swap ActiveRecord::QueryCache, SwitchPoint::QueryCache
+# Replace ActiveRecord::QueryCache with SwitchConnection::QueryCache
+config.middleware.swap ActiveRecord::QueryCache, SwitchConnection::QueryCache
 
 # Enable query cache for :nanika1 only.
-config.middleware.swap ActiveRecord::QueryCache, SwitchPoint::QueryCache, [:nanika1]
+config.middleware.swap ActiveRecord::QueryCache, SwitchConnection::QueryCache, [:nanika1]
 ```
 
 ## Notes

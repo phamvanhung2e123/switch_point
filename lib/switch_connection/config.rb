@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module SwitchPoint
+module SwitchConnection
   class Config
     attr_accessor :auto_master, :env
     alias_method :auto_master?, :auto_master
