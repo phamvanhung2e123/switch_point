@@ -1,3 +1,9 @@
+## 1.0.0 (2019-07-31)
+- Multi slaves support
+- Connect to master by default
+- Change switch point (thread safe)
+- Log connection name
+
 ## 0.8.0 (2016-06-06)
 - Drop Ruby 2.0.0 and 2.1 support
 - Add `AR::Base#with_readonly` and `AR::Base#with_writable`
