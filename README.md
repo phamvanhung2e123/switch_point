@@ -1,8 +1,8 @@
 # SwitchConnection
 [![Gem Version](https://badge.fury.io/rb/switch_connection.svg)](https://badge.fury.io/rb/switch_connection)
 [![Build Status](https://travis-ci.org/phamvanhung2e123/switch_point.svg?branch=master)](https://travis-ci.org/phamvannhung2e123/switch_point)
-[![Coverage Status](https://img.shields.io/coveralls/phamvanhung2e123/switch_point.svg?branch=master)](https://coveralls.io/r/phamvannhung2e123/switch_point?branch=master)
-[![Code Climate](https://codeclimate.com/github/phamvanhung2e123/switch_point/badges/gpa.svg)](https://codeclimate.com/github/phamvannhung2e123/switch_point)
+[![Coverage Status](https://img.shields.io/coveralls/phamvanhung2e123/switch_point.svg?branch=master)](https://coveralls.io/r/phamvanhung2e123/switch_point?branch=master)
+[![Code Climate](https://codeclimate.com/github/phamvanhung2e123/switch_point/badges/gpa.svg)](https://codeclimate.com/github/phamvanhung2e123/switch_point)
 
 Switching database connection between slave one and writable one. Fork from `switch_point` gem.
 Original Version: https://github.com/eagletmt/switch_point.
