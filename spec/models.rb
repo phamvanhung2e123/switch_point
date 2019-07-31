@@ -2,26 +2,28 @@
 
 SwitchPoint.configure do |config|
   config.define_switch_point :main,
-    readonly: :main_readonly,
-    writable: :main_writable
+    slaves: [:main_slave],
+    master: :main_master
   config.define_switch_point :main2,
-    readonly: :main2_readonly,
-    writable: :main2_writable
+    slaves: [:main2_slave],
+    master: :main2_master
   config.define_switch_point :user,
-    readonly: :user,
-    writable: :user
+    slaves: [:user],
+    master: :user
   config.define_switch_point :comment,
-    readonly: :comment_readonly,
-    writable: :comment_writable
+    slaves: [:comment_slave],
+    master: :comment_master
   config.define_switch_point :special,
-    readonly: :main_readonly_special,
-    writable: :main_writable
+    slaves: [:main_slave_special],
+    master: :main_master
   config.define_switch_point :nanika1,
-    readonly: :main_readonly
+    slaves: [:main_slave],
+    master: :main_master
   config.define_switch_point :nanika2,
-    readonly: :main_readonly
+    slaves: [:main_slave],
+    master: :main_master
   config.define_switch_point :nanika3,
-    writable: :comment_writable
+    master: :comment_master
 end
 
 require 'active_record'
@@ -93,15 +95,17 @@ base =
     { adapter: 'sqlite3' }
   end
 databases = {
-  'main_readonly' => base.merge(database: 'main_readonly.sqlite3'),
-  'main_writable' => base.merge(database: 'main_writable.sqlite3'),
-  'main2_readonly' => base.merge(database: 'main2_readonly.sqlite3'),
-  'main2_writable' => base.merge(database: 'main2_writable.sqlite3'),
-  'main_readonly_special' => base.merge(database: 'main_readonly_special.sqlite3'),
-  'user' => base.merge(database: 'user.sqlite3'),
-  'comment_readonly' => base.merge(database: 'comment_readonly.sqlite3'),
-  'comment_writable' => base.merge(database: 'comment_writable.sqlite3'),
-  'default' => base.merge(database: 'default.sqlite3'),
+    test: {
+        'main_slave' => base.merge(database: 'main_slave.sqlite3'),
+        'main_master' => base.merge(database: 'main_master.sqlite3'),
+        'main2_slave' => base.merge(database: 'main2_slave.sqlite3'),
+        'main2_master' => base.merge(database: 'main2_master.sqlite3'),
+        'main_slave_special' => base.merge(database: 'main_slave_special.sqlite3'),
+        'user' => base.merge(database: 'user.sqlite3'),
+        'comment_slave' => base.merge(database: 'comment_slave.sqlite3'),
+        'comment_master' => base.merge(database: 'comment_master.sqlite3'),
+        'default' => base.merge(database: 'default.sqlite3'),
+    }
 }
 ActiveRecord::Base.configurations =
   # ActiveRecord.gem_version was introduced in ActiveRecord 4.0
@@ -110,7 +114,8 @@ ActiveRecord::Base.configurations =
   else
     databases
   end
-ActiveRecord::Base.establish_connection(:default)
+require 'pry'
+ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env]["default"])
 
 # XXX: Check connection laziness
 [Book, User, Note, Nanika1, ActiveRecord::Base].each do |model|
@@ -121,12 +126,12 @@ end
 ActiveRecord::Base.connection # Create connection
 
 [Book, User, Nanika3].each do |model|
-  model.with_writable do
+  model.with_master do
     if model.switch_point_proxy.connected?
       raise "#{model.name} didn't establish connection lazily!"
     end
   end
-  model.with_readonly do
+  model.with_slave do
     if model.switch_point_proxy.connected?
       raise "#{model.name} didn't establish connection lazily!"
     end

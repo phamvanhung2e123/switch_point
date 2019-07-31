@@ -6,47 +6,51 @@ module SwitchPoint
   class Proxy
     attr_reader :initial_name
 
-    AVAILABLE_MODES = %i[writable readonly].freeze
-    DEFAULT_MODE = :readonly
+    AVAILABLE_MODES = %i[master slave].freeze
+    DEFAULT_MODE = :master
 
     def initialize(name)
       @initial_name = name
       @current_name = name
-      AVAILABLE_MODES.each do |mode|
-        model = define_model(name, mode)
-        memorize_switch_point(name, mode, model.connection_pool)
-      end
+      define_master_model(name)
+      define_slave_model(name)
       @global_mode = DEFAULT_MODE
     end
 
-    def define_model(name, mode)
-      model_name = SwitchPoint.config.model_name(name, mode)
+    def define_master_model(name)
+      model_name = SwitchPoint.config.master_model_name(name)
       if model_name
         model = Class.new(ActiveRecord::Base)
         Proxy.const_set(model_name, model)
-        model.establish_connection(SwitchPoint.config.database_name(name, mode))
+        model.establish_connection(self.db_specific(SwitchPoint.config.master_database_name(name)))
         model
-      elsif mode == :readonly
-        # Re-use writable connection
-        Proxy.const_get(SwitchPoint.config.model_name(name, :writable))
       else
         ActiveRecord::Base
       end
     end
 
-    def memorize_switch_point(name, mode, pool)
-      switch_point = { name: name, mode: mode }
-      if pool.equal?(ActiveRecord::Base.connection_pool)
-        if mode != :writable
-          raise Error.new("ActiveRecord::Base's switch_points must be writable, but #{name} is #{mode}")
+    def define_slave_model(name)
+      return unless SwitchPoint.config.slave_exist?(name)
+      slave_count = SwitchPoint.config.slave_count(name)
+      (0..(slave_count-1)).each do |index|
+        model_name = SwitchPoint.config.slave_mode_name(name, index)
+        if model_name
+          model = Class.new(ActiveRecord::Base)
+          Proxy.const_set(model_name, model)
+          model.establish_connection(self.db_specific(SwitchPoint.config.slave_database_name(name, index)))
+          model
+        else
+          ActiveRecord::Base
         end
-        switch_points = pool.spec.config[:switch_points] || []
-        switch_points << switch_point
-        pool.spec.config[:switch_points] = switch_points
-      elsif pool.spec.config.key?(:switch_point)
-        # Only :writable is specified
+      end
+    end
+
+    def db_specific(db_name)
+      base_config = ::ActiveRecord::Base.configurations.fetch(SwitchPoint.config.env)
+      if db_name == :default
+        return base_config
       else
-        pool.spec.config[:switch_point] = switch_point
+        return db_name.to_s.split(".").inject(base_config) {|h, n| h[n]}
       end
     end
 
@@ -63,36 +67,36 @@ module SwitchPoint
       thread_local_mode || @global_mode
     end
 
-    def readonly!
+    def slave!
       if thread_local_mode
-        self.thread_local_mode = :readonly
+        self.thread_local_mode = :slave
       else
-        @global_mode = :readonly
+        @global_mode = :slave
       end
     end
 
-    def readonly?
-      mode == :readonly
+    def slave?
+      mode == :slave
     end
 
-    def writable!
+    def master!
       if thread_local_mode
-        self.thread_local_mode = :writable
+        self.thread_local_mode = :master
       else
-        @global_mode = :writable
+        @global_mode = :master
       end
     end
 
-    def writable?
-      mode == :writable
+    def master?
+      mode == :master
     end
 
-    def with_readonly(&block)
-      with_mode(:readonly, &block)
+    def with_slave(&block)
+      with_mode(:slave, &block)
     end
 
-    def with_writable(&block)
-      with_mode(:writable, &block)
+    def with_master(&block)
+      with_mode(:master, &block)
     end
 
     def with_mode(new_mode, &block)
@@ -129,9 +133,9 @@ module SwitchPoint
       model_name = SwitchPoint.config.model_name(@current_name, mode)
       if model_name
         Proxy.const_get(model_name)
-      elsif mode == :readonly
-        # When only writable is specified, re-use writable connection.
-        with_writable do
+      elsif mode == :slave
+        # When only master is specified, re-use master connection.
+        with_master do
           model_for_connection
         end
       else
@@ -148,14 +152,14 @@ module SwitchPoint
     end
 
     def cache(&block)
-      r = with_readonly { model_for_connection }
-      w = with_writable { model_for_connection }
+      r = with_slave { model_for_connection }
+      w = with_master { model_for_connection }
       r.cache { w.cache(&block) }
     end
 
     def uncached(&block)
-      r = with_readonly { model_for_connection }
-      w = with_writable { model_for_connection }
+      r = with_slave { model_for_connection }
+      w = with_master { model_for_connection }
       r.uncached { w.uncached(&block) }
     end
   end
