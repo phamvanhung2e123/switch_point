@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-SwitchPoint.configure do |config|
+SwitchConnection.configure do |config|
   config.define_switch_point :main,
                              slaves: [:main_slave],
                              master: :main_master
@@ -116,7 +116,7 @@ ActiveRecord::Base.configurations =
     databases
   end
 
-default_database_config = ActiveRecord::Base.configurations[SwitchPoint.config.env]['default']
+default_database_config = ActiveRecord::Base.configurations[SwitchConnection.config.env]['default']
 ActiveRecord::Base.establish_connection(default_database_config)
 
 # XXX: Check connection laziness

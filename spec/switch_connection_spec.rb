@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SwitchPoint do
+RSpec.describe SwitchConnection do
   describe '.master_all!' do
     it 'changes connection globally' do
       expect(Book).to connect_to('main_master.sqlite3')
@@ -8,7 +8,7 @@ RSpec.describe SwitchPoint do
       expect(Comment).to connect_to('comment_master.sqlite3')
       expect(User).to connect_to('user.sqlite3')
       expect(BigData).to connect_to('main_master.sqlite3')
-      SwitchPoint.master_all!
+      SwitchConnection.master_all!
       expect(Book).to connect_to('main_master.sqlite3')
       expect(Book3).to connect_to('main2_master.sqlite3')
       expect(Comment).to connect_to('comment_master.sqlite3')
@@ -17,7 +17,7 @@ RSpec.describe SwitchPoint do
     end
 
     it 'affects thread-globally' do
-      SwitchPoint.master_all!
+      SwitchConnection.master_all!
       Thread.start do
         expect(Book).to connect_to('main_master.sqlite3')
         expect(Book3).to connect_to('main2_master.sqlite3')
@@ -29,7 +29,7 @@ RSpec.describe SwitchPoint do
 
     context 'within with block' do
       it 'changes the current mode' do
-        SwitchPoint.master_all!
+        SwitchConnection.master_all!
         Book.with_slave do
           expect(Book).to connect_to('main_slave.sqlite3')
         end
@@ -50,7 +50,7 @@ RSpec.describe SwitchPoint do
     end
 
     it 'affects thread-globally' do
-      SwitchPoint.master!(:main)
+      SwitchConnection.master!(:main)
       Thread.start do
         expect(Book).to connect_to('main_master.sqlite3')
       end.join
@@ -59,7 +59,7 @@ RSpec.describe SwitchPoint do
     context 'within with block' do
       it 'changes the current mode' do
         Book.with_master do
-          SwitchPoint.slave!(:main)
+          SwitchConnection.slave!(:main)
           expect(Book).to connect_to('main_slave.sqlite3')
         end
         expect(Book).to connect_to('main_master.sqlite3')
@@ -71,14 +71,14 @@ RSpec.describe SwitchPoint do
 
     context 'with unknown name' do
       it 'raises error' do
-        expect { SwitchPoint.master!(:unknown) }.to raise_error(KeyError)
+        expect { SwitchConnection.master!(:unknown) }.to raise_error(KeyError)
       end
     end
   end
 
   describe '.with_master' do
     it 'changes connection' do
-      SwitchPoint.with_master(:main, :nanika1) do
+      SwitchConnection.with_master(:main, :nanika1) do
         expect(Book).to connect_to('main_master.sqlite3')
         expect(Publisher).to connect_to('main_master.sqlite3')
         expect(Nanika1).to connect_to('main_master.sqlite3')
@@ -90,7 +90,7 @@ RSpec.describe SwitchPoint do
 
     context 'with unknown name' do
       it 'raises error' do
-        expect { SwitchPoint.with_master(:unknown) { raise RuntimeError } }.to raise_error(KeyError)
+        expect { SwitchConnection.with_master(:unknown) { raise RuntimeError } }.to raise_error(KeyError)
       end
     end
   end
@@ -99,7 +99,7 @@ RSpec.describe SwitchPoint do
     it 'changes all connections' do
       expect(Book).to connect_to('main_master.sqlite3')
       expect(Comment).to connect_to('comment_master.sqlite3')
-      SwitchPoint.with_master_all do
+      SwitchConnection.with_master_all do
         expect(Book).to connect_to('main_master.sqlite3')
         expect(Comment).to connect_to('comment_master.sqlite3')
       end

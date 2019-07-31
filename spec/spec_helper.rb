@@ -14,7 +14,7 @@ SimpleCov.start do
   add_filter File.dirname(__FILE__)
 end
 
-require 'switch_point'
+require 'switch_connection'
 require 'models'
 
 RSpec.configure do |config|
@@ -61,7 +61,7 @@ RSpec.configure do |config|
   end
 
   config.after(:suite) do
-    ActiveRecord::Base.configurations[SwitchPoint.config.env].each_value do |c|
+    ActiveRecord::Base.configurations[SwitchConnection.config.env].each_value do |c|
       FileUtils.rm_f(c[:database])
     end
   end

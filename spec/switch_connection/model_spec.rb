@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe SwitchPoint::Model do
+RSpec.describe SwitchConnection::Model do
   describe '.use_switch_point' do
     after do
       Book.use_switch_point :main
@@ -51,11 +51,11 @@ RSpec.describe SwitchPoint::Model do
 
     context 'when auto_master is enabled' do
       around do |example|
-        SwitchPoint.configure do |config|
+        SwitchConnection.configure do |config|
           config.auto_master = true
         end
         example.run
-        SwitchPoint.configure do |config|
+        SwitchConnection.configure do |config|
           config.auto_master = false
         end
       end
@@ -200,7 +200,7 @@ RSpec.describe SwitchPoint::Model do
 
     context 'without use_switch_point' do
       it 'raises error' do
-        expect { Note.with_master { :bypass } }.to raise_error(SwitchPoint::UnconfiguredError)
+        expect { Note.with_master { :bypass } }.to raise_error(SwitchConnection::UnconfiguredError)
       end
     end
 
@@ -227,7 +227,7 @@ RSpec.describe SwitchPoint::Model do
   describe '.with_slave' do
     context 'when master! is called globally' do
       before do
-        SwitchPoint.master!(:main)
+        SwitchConnection.master!(:main)
       end
 
       it 'locally overwrites global mode' do
@@ -251,7 +251,7 @@ RSpec.describe SwitchPoint::Model do
 
   describe '#with_mode' do
     it 'raises error if unknown mode is given' do
-      expect { SwitchPoint::ProxyRepository.checkout(:main).with_mode(:typo) }.to raise_error(ArgumentError)
+      expect { SwitchConnection::ProxyRepository.checkout(:main).with_mode(:typo) }.to raise_error(ArgumentError)
     end
   end
 
@@ -319,7 +319,7 @@ RSpec.describe SwitchPoint::Model do
             Book.create
             Book3.create
           end
-        }.to raise_error(SwitchPoint::Error)
+        }.to raise_error(SwitchConnection::Error)
       }
     end
 
@@ -396,7 +396,7 @@ RSpec.describe SwitchPoint::Model do
       end
       expect(Book.with_master { Book.count }).to eq(1)
 
-      expect { book.transaction_with(Book3) {} }.to raise_error(SwitchPoint::Error)
+      expect { book.transaction_with(Book3) {} }.to raise_error(SwitchConnection::Error)
     end
   end
 end

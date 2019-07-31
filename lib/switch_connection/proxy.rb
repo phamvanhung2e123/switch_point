@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'switch_point/error'
+require 'switch_connection/error'
 
-module SwitchPoint
+module SwitchConnection
   class Proxy
     attr_reader :initial_name
 
@@ -18,11 +18,11 @@ module SwitchPoint
     end
 
     def define_master_model(name)
-      model_name = SwitchPoint.config.master_model_name(name)
+      model_name = SwitchConnection.config.master_model_name(name)
       if model_name
         model = Class.new(ActiveRecord::Base)
         Proxy.const_set(model_name, model)
-        master_database_name = SwitchPoint.config.master_database_name(name)
+        master_database_name = SwitchConnection.config.master_database_name(name)
         model.establish_connection(db_specific(master_database_name))
         model
       else
@@ -31,22 +31,22 @@ module SwitchPoint
     end
 
     def define_slave_model(name)
-      return unless SwitchPoint.config.slave_exist?(name)
+      return unless SwitchConnection.config.slave_exist?(name)
 
-      slave_count = SwitchPoint.config.slave_count(name)
+      slave_count = SwitchConnection.config.slave_count(name)
       (0..(slave_count - 1)).map do |index|
-        model_name = SwitchPoint.config.slave_mode_name(name, index)
+        model_name = SwitchConnection.config.slave_mode_name(name, index)
         next ActiveRecord::Base unless model_name
 
         model = Class.new(ActiveRecord::Base)
         Proxy.const_set(model_name, model)
-        model.establish_connection(db_specific(SwitchPoint.config.slave_database_name(name, index)))
+        model.establish_connection(db_specific(SwitchConnection.config.slave_database_name(name, index)))
         model
       end
     end
 
     def db_specific(db_name)
-      base_config = ::ActiveRecord::Base.configurations.fetch(SwitchPoint.config.env)
+      base_config = ::ActiveRecord::Base.configurations.fetch(SwitchConnection.config.env)
       return base_config if db_name == :default
 
       db_name.to_s.split('.').inject(base_config) { |h, n| h[n] }
@@ -129,7 +129,7 @@ module SwitchPoint
 
     def model_for_connection
       ProxyRepository.checkout(@current_name) # Ensure the target proxy is created
-      model_name = SwitchPoint.config.model_name(@current_name, mode)
+      model_name = SwitchConnection.config.model_name(@current_name, mode)
       if model_name
         Proxy.const_get(model_name)
       elsif mode == :slave
