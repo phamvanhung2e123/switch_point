@@ -4,13 +4,14 @@
 [![Coverage Status](https://img.shields.io/coveralls/phamvanhung2e123/switch_point.svg?branch=master)](https://coveralls.io/r/phamvannhung2e123/switch_point?branch=master)
 [![Code Climate](https://codeclimate.com/github/phamvanhung2e123/switch_point/badges/gpa.svg)](https://codeclimate.com/github/phamvannhung2e123/switch_point)
 
-Switching database connection between slave one and writable one.
+Switching database connection between slave one and writable one. Fork from `switch_point` gem.
+Original Version: https://github.com/eagletmt/switch_point.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'switch_point'
+    gem 'switch_connection'
 
 And then execute:
 
@@ -18,7 +19,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install switch_point
+    $ gem install switch_connection
 
 ## Usage
 Suppose you have 4 databases: db-blog-master, db-blog-slave, db-comment-master and db-comment-slave.
@@ -45,11 +46,11 @@ In initializer:
 ```ruby
 SwitchConnection.configure do |config|
   config.define_switch_point :blog,
-    slave: :"#{Rails.env}_blog_slave",
-    writable: :"#{Rails.env}_blog_master"
+    slaves: [:"#{Rails.env}_blog_slave1",:"#{Rails.env}_blog_slave2"]
+    master: :"#{Rails.env}_blog_master"
   config.define_switch_point :comment,
-    slave: :"#{Rails.env}_comment_slave",
-    writable: :"#{Rails.env}_comment_master"
+    slaves: [:"#{Rails.env}_comment_slave"]
+    master: :"#{Rails.env}_comment_master"
 end
 ```
 
@@ -87,30 +88,19 @@ Article.with_slave do
 end
 ```
 
-Note that Article and Category shares their connections.
-
-### Query cache
-`Model.cache` and `Model.uncached` enables/disables query cache for both
-slave connection and writable connection.
-
-switch_point also provide a rack middleware `SwitchConnection::QueryCache` similar
-to `ActiveRecord::QueryCache`. It enables query cache for all models using
-switch_point.
-
+- with_switch_point
 ```ruby
-# Replace ActiveRecord::QueryCache with SwitchConnection::QueryCache
-config.middleware.swap ActiveRecord::QueryCache, SwitchConnection::QueryCache
-
-# Enable query cache for :nanika1 only.
-config.middleware.swap ActiveRecord::QueryCache, SwitchConnection::QueryCache, [:nanika1]
+Book.with_switch_point(:main) { Book.count  }
 ```
+
+Note that Article and Category shares their connections.
 
 ## Notes
 
-### auto_writable
-`auto_writable` is disabled by default.
+### auto_master
+`auto_master` by default.
 
-When `auto_writable` is enabled, destructive queries is sent to writable connection even in slave mode.
+When `auto_master` is enabled, destructive queries is sent to writable connection even in slave mode.
 But it does NOT work well on transactions.
 
 Suppose `after_save` callback is set to User model. When `User.create` is called, it proceeds as follows.
@@ -143,12 +133,10 @@ When the writable connection is requested to execute destructive query, the slav
 Basically, each connection managed by a proxy isn't shared between proxies.
 But there's one exception: ActiveRecord::Base.
 
-If `:writable` key is omitted (e.g., Nanika1 model in spec/models), it uses `ActiveRecord::Base.connection` as writable one.
-When `ActiveRecord::Base.connection` is requested to execute destructive query, all slave connections managed by a proxy which uses `ActiveRecord::Base.connection` as a writable connection clear query cache.
 
 ## Contributing
 
-1. Fork it ( https://github.com/eagletmt/switch_point/fork )
+1. Fork it ( https://github.com/phamvanmhung2e123/switch_point/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
