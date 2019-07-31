@@ -2,7 +2,7 @@
 module SwitchPoint
   class Config
     attr_accessor :auto_master, :env
-    alias_method :auto_master?, :auto_master
+    alias :auto_master? :auto_master
 
     def initialize
       self.auto_master = false
@@ -36,9 +36,7 @@ module SwitchPoint
     end
 
     def master_model_name(name)
-      if fetch(name)[:master]
-        "#{name.to_s.gsub(/\W+/, '_').camelize}_master".camelize
-      end
+      "#{name.to_s.gsub(/\W+/, '_').camelize}_master".camelize if fetch(name)[:master]
     end
 
     def slave_mode_name(name, index)
@@ -55,7 +53,7 @@ module SwitchPoint
     end
 
     def slave_mode_names(name)
-      (0..(fetch(name)[:slaves].count-1)).map { |i| slave_mode_name(name, i)  }
+      (0..(fetch(name)[:slaves].count - 1)).map { |i| slave_mode_name(name, i) }
     end
 
     def fetch(name)
@@ -74,16 +72,16 @@ module SwitchPoint
 
     def assert_valid_config!(config)
       unless config.key?(:master) || config.key?(:slaves)
-        raise ArgumentError.new(':master or :slaves must be specified')
+        raise ArgumentError, ":master or :slaves must be specified"
       end
       if config.key?(:slaves)
         unless config[:slaves].is_a?(Array)
-          raise TypeError.new(":slaves's value must be Array")
+          raise TypeError, ":slaves's value must be Array"
         end
       end
       if config.key?(:master)
         unless config[:master].is_a?(Symbol)
-          raise TypeError.new(":master's value must be ")
+          raise TypeError, ":master's value must be "
         end
       end
       nil

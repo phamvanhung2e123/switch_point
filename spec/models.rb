@@ -2,28 +2,28 @@
 
 SwitchPoint.configure do |config|
   config.define_switch_point :main,
-    slaves: [:main_slave],
-    master: :main_master
+                             slaves: [:main_slave],
+                             master: :main_master
   config.define_switch_point :main2,
-    slaves: [:main2_slave],
-    master: :main2_master
+                             slaves: [:main2_slave],
+                             master: :main2_master
   config.define_switch_point :user,
-    slaves: [:user],
-    master: :user
+                             slaves: [:user],
+                             master: :user
   config.define_switch_point :comment,
-    slaves: [:comment_slave],
-    master: :comment_master
+                             slaves: [:comment_slave],
+                             master: :comment_master
   config.define_switch_point :special,
-    slaves: [:main_slave_special],
-    master: :main_master
+                             slaves: [:main_slave_special],
+                             master: :main_master
   config.define_switch_point :nanika1,
-    slaves: [:main_slave],
-    master: :main_master
+                             slaves: [:main_slave],
+                             master: :main_master
   config.define_switch_point :nanika2,
-    slaves: [:main_slave],
-    master: :main_master
+                             slaves: [:main_slave],
+                             master: :main_master
   config.define_switch_point :nanika3,
-    master: :comment_master
+                             master: :comment_master
 end
 
 require 'active_record'
@@ -94,18 +94,19 @@ base =
   else
     { adapter: 'sqlite3' }
   end
+
 databases = {
-    test: {
-        'main_slave' => base.merge(database: 'main_slave.sqlite3'),
-        'main_master' => base.merge(database: 'main_master.sqlite3'),
-        'main2_slave' => base.merge(database: 'main2_slave.sqlite3'),
-        'main2_master' => base.merge(database: 'main2_master.sqlite3'),
-        'main_slave_special' => base.merge(database: 'main_slave_special.sqlite3'),
-        'user' => base.merge(database: 'user.sqlite3'),
-        'comment_slave' => base.merge(database: 'comment_slave.sqlite3'),
-        'comment_master' => base.merge(database: 'comment_master.sqlite3'),
-        'default' => base.merge(database: 'default.sqlite3'),
-    }
+  test: {
+    'main_slave' => base.merge(database: 'main_slave.sqlite3'),
+    'main_master' => base.merge(database: 'main_master.sqlite3'),
+    'main2_slave' => base.merge(database: 'main2_slave.sqlite3'),
+    'main2_master' => base.merge(database: 'main2_master.sqlite3'),
+    'main_slave_special' => base.merge(database: 'main_slave_special.sqlite3'),
+    'user' => base.merge(database: 'user.sqlite3'),
+    'comment_slave' => base.merge(database: 'comment_slave.sqlite3'),
+    'comment_master' => base.merge(database: 'comment_master.sqlite3'),
+    'default' => base.merge(database: 'default.sqlite3')
+  }
 }
 ActiveRecord::Base.configurations =
   # ActiveRecord.gem_version was introduced in ActiveRecord 4.0
@@ -114,8 +115,9 @@ ActiveRecord::Base.configurations =
   else
     databases
   end
-require 'pry'
-ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env]["default"])
+
+default_database_config = ActiveRecord::Base.configurations[SwitchPoint.config.env]["default"]
+ActiveRecord::Base.establish_connection(default_database_config)
 
 # XXX: Check connection laziness
 [Book, User, Note, Nanika1, ActiveRecord::Base].each do |model|

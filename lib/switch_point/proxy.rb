@@ -22,7 +22,8 @@ module SwitchPoint
       if model_name
         model = Class.new(ActiveRecord::Base)
         Proxy.const_set(model_name, model)
-        model.establish_connection(self.db_specific(SwitchPoint.config.master_database_name(name)))
+        master_database_name = SwitchPoint.config.master_database_name(name)
+        model.establish_connection(db_specific(master_database_name))
         model
       else
         ActiveRecord::Base
@@ -32,12 +33,13 @@ module SwitchPoint
     def define_slave_model(name)
       return unless SwitchPoint.config.slave_exist?(name)
       slave_count = SwitchPoint.config.slave_count(name)
-      (0..(slave_count-1)).each do |index|
+      (0..(slave_count - 1)).each do |index|
         model_name = SwitchPoint.config.slave_mode_name(name, index)
         if model_name
           model = Class.new(ActiveRecord::Base)
           Proxy.const_set(model_name, model)
-          model.establish_connection(self.db_specific(SwitchPoint.config.slave_database_name(name, index)))
+          slave_database_name = SwitchPoint.config.slave_database_name(name, index)
+          model.establish_connection(db_specific(slave_database_name))
           model
         else
           ActiveRecord::Base
@@ -47,11 +49,8 @@ module SwitchPoint
 
     def db_specific(db_name)
       base_config = ::ActiveRecord::Base.configurations.fetch(SwitchPoint.config.env)
-      if db_name == :default
-        return base_config
-      else
-        return db_name.to_s.split(".").inject(base_config) {|h, n| h[n]}
-      end
+      return base_config if db_name == :default
+      db_name.to_s.split(".").inject(base_config) { |h, n| h[n] }
     end
 
     def thread_local_mode

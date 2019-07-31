@@ -51,10 +51,10 @@ module SwitchPoint
         @global_switch_point_name = name
       end
 
-      def with_switch_point(new_switch_point_name, &block)
+      def with_switch_point(new_switch_point_name)
         saved_switch_point_name = thread_local_switch_point_name
         self.thread_local_switch_point_name = new_switch_point_name
-        block.call
+        yield
       ensure
         self.thread_local_switch_point_name = saved_switch_point_name
       end
@@ -64,7 +64,7 @@ module SwitchPoint
       end
 
       def thread_local_switch_point_name
-        Thread.current[:"thread_local_#{self.name}_switch_point_name"]
+        Thread.current[:"thread_local_#{name}_switch_point_name"]
       end
 
       def thread_local_switch_point_name=(name)
@@ -101,12 +101,11 @@ module SwitchPoint
 
       def can_transaction_with?(*models)
         master_switch_points = [self, *models].map do |model|
-          if model.switch_point_name
-            SwitchPoint.config.model_name(
-              model.switch_point_name,
-              :master
-            )
-          end
+          next unless model.switch_point_name
+          SwitchPoint.config.model_name(
+            model.switch_point_name,
+            :master
+          )
         end
 
         master_switch_points.uniq.size == 1
