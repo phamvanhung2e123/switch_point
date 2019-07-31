@@ -35,15 +35,13 @@ module SwitchPoint
       slave_count = SwitchPoint.config.slave_count(name)
       (0..(slave_count - 1)).each do |index|
         model_name = SwitchPoint.config.slave_mode_name(name, index)
-        if model_name
-          model = Class.new(ActiveRecord::Base)
-          Proxy.const_set(model_name, model)
-          slave_database_name = SwitchPoint.config.slave_database_name(name, index)
-          model.establish_connection(db_specific(slave_database_name))
-          model
-        else
-          ActiveRecord::Base
-        end
+        next ActiveRecord::Base unless model_name
+
+        model = Class.new(ActiveRecord::Base)
+        Proxy.const_set(model_name, model)
+        slave_database_name = SwitchPoint.config.slave_database_name(name, index)
+        model.establish_connection(db_specific(slave_database_name))
+        model
       end
     end
 

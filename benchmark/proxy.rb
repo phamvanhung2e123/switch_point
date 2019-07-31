@@ -6,8 +6,8 @@ require 'active_record'
 
 SwitchPoint.configure do |config|
   config.define_switch_point :proxy,
-    slave: :proxy_slave,
-    master: :proxy_master
+                             slaves: [:proxy_slave]
+                             master: :proxy_master
 end
 
 class Plain < ActiveRecord::Base
@@ -29,7 +29,7 @@ database_config = { adapter: 'sqlite3', database: ':memory:' }
 ActiveRecord::Base.configurations = {
   'default' => database_config.dup,
   'proxy_slave' => database_config.dup,
-  'proxy_master' => database_config.dup,
+  'proxy_master' => database_config.dup
 }
 ActiveRecord::Base.establish_connection(:default)
 

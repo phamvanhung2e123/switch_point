@@ -2,7 +2,7 @@
 module SwitchPoint
   class Config
     attr_accessor :auto_master, :env
-    alias :auto_master? :auto_master
+    alias_method :auto_master?, :auto_master
 
     def initialize
       self.auto_master = false
@@ -72,7 +72,7 @@ module SwitchPoint
 
     def assert_valid_config!(config)
       unless config.key?(:master) || config.key?(:slaves)
-        raise ArgumentError, ":master or :slaves must be specified"
+        raise ArgumentError, ':master or :slaves must be specified'
       end
       if config.key?(:slaves)
         unless config[:slaves].is_a?(Array)
