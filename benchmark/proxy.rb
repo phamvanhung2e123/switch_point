@@ -3,13 +3,12 @@
 require 'benchmark/ips'
 require 'switch_point'
 require 'active_record'
-
 SwitchPoint.configure do |config|
   config.define_switch_point :proxy,
                              slaves: [:proxy_slave],
                              master: :proxy_master
 end
-
+ENV['RAILS_ENV'] ||= 'test'
 class Plain < ActiveRecord::Base
 end
 
@@ -26,12 +25,22 @@ class Proxy2 < ProxyBase
 end
 
 database_config = { adapter: 'sqlite3', database: ':memory:' }
-ActiveRecord::Base.configurations = {
-  'default' => database_config.dup,
-  'proxy_slave' => database_config.dup,
-  'proxy_master' => database_config.dup
+databases = {
+  test: {
+    'default' => database_config.dup,
+    'proxy_slave' => database_config.dup,
+    'proxy_master' => database_config.dup
+  }
 }
-ActiveRecord::Base.establish_connection(:default)
+
+ActiveRecord::Base.configurations =
+  # ActiveRecord.gem_version was introduced in ActiveRecord 4.0
+  if ActiveRecord.respond_to?(:gem_version) && ActiveRecord.gem_version >= Gem::Version.new('5.1.0')
+    { 'test' => databases }
+  else
+    databases
+  end
+ActiveRecord::Base.establish_connection(ActiveRecord::Base.configurations[SwitchPoint.config.env]['default'])
 
 Plain.connection.execute('CREATE TABLE plains (id integer primary key autoincrement)')
 %i[slave master].each do |mode|
