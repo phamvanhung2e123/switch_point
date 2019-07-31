@@ -1,8 +1,8 @@
 # SwitchPoint
 [![Gem Version](https://badge.fury.io/rb/switch_point.svg)](http://badge.fury.io/rb/switch_point)
-[![Build Status](https://travis-ci.org/eagletmt/switch_point.svg?branch=master)](https://travis-ci.org/eagletmt/switch_point)
-[![Coverage Status](https://img.shields.io/coveralls/eagletmt/switch_point.svg?branch=master)](https://coveralls.io/r/eagletmt/switch_point?branch=master)
-[![Code Climate](https://codeclimate.com/github/eagletmt/switch_point/badges/gpa.svg)](https://codeclimate.com/github/eagletmt/switch_point)
+[![Build Status](https://travis-ci.org/phamvanhung2e123/switch_point.svg?branch=master)](https://travis-ci.org/phamvannhung22123/switch_point)
+[![Coverage Status](https://img.shields.io/coveralls/phamvanhung2e123/switch_point.svg?branch=master)](https://coveralls.io/r/phamvannhung2e123/switch_point?branch=master)
+[![Code Climate](https://codeclimate.com/github/phamvanhung2e123/switch_point/badges/gpa.svg)](https://codeclimate.com/github/phamvannhung2e123/switch_point)
 
 Switching database connection between slave one and writable one.
 
