@@ -22,3 +22,5 @@ tmp
 mkmf.log
 vendor
 /gemfiles/*.lock
+.idea
+.ruby-version
