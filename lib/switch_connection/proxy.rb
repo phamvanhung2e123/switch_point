@@ -65,24 +65,8 @@ module SwitchConnection
       thread_local_mode || @global_mode
     end
 
-    def slave!
-      if thread_local_mode
-        self.thread_local_mode = :slave
-      else
-        @global_mode = :slave
-      end
-    end
-
     def slave?
       mode == :slave
-    end
-
-    def master!
-      if thread_local_mode
-        self.thread_local_mode = :master
-      else
-        @global_mode = :master
-      end
     end
 
     def master?
@@ -104,7 +88,7 @@ module SwitchConnection
 
       saved_mode = thread_local_mode
       self.thread_local_mode = new_mode
-      block.call
+      block.call(self)
     ensure
       self.thread_local_mode = saved_mode
     end

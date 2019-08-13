@@ -226,10 +226,6 @@ RSpec.describe SwitchConnection::Model do
 
   describe '.with_slave' do
     context 'when master! is called globally' do
-      before do
-        SwitchConnection.master!(:main)
-      end
-
       it 'locally overwrites global mode' do
         Book.with_slave do
           expect(Book).to connect_to('main_slave.sqlite3')

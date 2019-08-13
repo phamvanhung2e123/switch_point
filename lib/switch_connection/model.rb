@@ -54,7 +54,7 @@ module SwitchConnection
       def with_switch_point(new_switch_point_name)
         saved_switch_point_name = thread_local_switch_point_name
         self.thread_local_switch_point_name = new_switch_point_name
-        yield
+        yield(self)
       ensure
         self.thread_local_switch_point_name = saved_switch_point_name
       end
