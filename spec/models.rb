@@ -144,8 +144,11 @@ module SwitchConnection
   module LogSubscriber
     def self.included(base)
       base.send(:attr_accessor, :connection_name)
-      base.alias_method_chain :sql, :connection_name
-      base.alias_method_chain :debug, :connection_name
+      base.send(:alias_method, :sql_without_connection_name, :sql)
+      base.send(:alias_method, :sql, :sql_with_connection_name)
+
+      base.send(:alias_method, :debug_without_connection_name, :debug)
+      base.send(:alias_method, :debug, :debug_with_connection_name)
     end
 
     def sql_with_connection_name(event)
