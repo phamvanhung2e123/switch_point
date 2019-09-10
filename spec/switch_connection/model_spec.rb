@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-
+require 'pry'
+require 'logger'
 RSpec.describe SwitchConnection::Model do
   describe '.use_switch_point' do
     after do
@@ -398,5 +399,19 @@ RSpec.describe SwitchConnection::Model do
 
       expect { book.transaction_with(Book3) {} }.to raise_error(SwitchConnection::Error)
     end
+  end
+
+  it 'auto select' do
+    Book.with_master do
+      Book.create
+    end
+   # Book.extend(SwitchConnection::Model::AutoReadFromSlave)
+   # expect(Book.find_by_sql ("SELECT * FROM books")).to eq([])
+    binding.pry
+    Book.count
+    binding.pry
+    expect(Book.all.count).to eq(0)
+    expect(Book.count).to eq(0)
+   # Book.with_master { expect(Book.all.count).to eq(1) }
   end
 end
