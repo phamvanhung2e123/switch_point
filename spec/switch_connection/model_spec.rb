@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 require 'pry'
 require 'logger'
+
+ActiveRecord::Base.logger = Logger.new STDOUT
 RSpec.describe SwitchConnection::Model do
   describe '.use_switch_point' do
     after do
@@ -405,7 +407,7 @@ RSpec.describe SwitchConnection::Model do
     Book.with_master do
       Book.create
     end
-   # Book.extend(SwitchConnection::Model::AutoReadFromSlave)
+    Book.extend(SwitchConnection::Model::AutoReadFromSlave)
    # expect(Book.find_by_sql ("SELECT * FROM books")).to eq([])
     binding.pry
     Book.count

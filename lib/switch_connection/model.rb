@@ -117,7 +117,7 @@ module SwitchConnection
       def connection
         if switch_point_proxy
           connection = switch_point_proxy.connection
-          connection.connection_name = switch_point_name
+          connection.connection_name = "#{switch_point_name.to_s} #{switch_point_proxy.mode.to_s}"
           connection
         else
           super
