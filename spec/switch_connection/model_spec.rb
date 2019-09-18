@@ -408,7 +408,7 @@ RSpec.describe SwitchConnection::Model do
       Book.create
     end
     Book.extend(SwitchConnection::Model::AutoReadFromSlave)
-   # expect(Book.find_by_sql ("SELECT * FROM books")).to eq([])
+    expect(Book.find_by_sql ("SELECT * FROM books")).to eq([])
     binding.pry
     Book.count
     binding.pry
