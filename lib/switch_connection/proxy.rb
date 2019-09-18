@@ -65,6 +65,22 @@ module SwitchConnection
       thread_local_mode || @global_mode
     end
 
+    def switch_connection_levels
+      Thread.current[:switch_connection_levels] ||= Hash.new(0)
+    end
+
+    def switch_connection_level=(level)
+      switch_connection_levels[@current_name] = level
+    end
+
+    def switch_connection_level
+      switch_connection_levels[@current_name] || 0
+    end
+
+    def switch_top_level_connection?
+      switch_connection_level.zero?
+    end
+
     def slave!
       if thread_local_mode
         self.thread_local_mode = :slave
@@ -103,10 +119,14 @@ module SwitchConnection
       end
 
       saved_mode = thread_local_mode
-      self.thread_local_mode = new_mode
+      if (new_mode == :master) || (new_mode == :slave && switch_top_level_connection?)
+        self.thread_local_mode = new_mode
+      end
+      self .switch_connection_level += 1
       block.call
     ensure
       self.thread_local_mode = saved_mode
+      self .switch_connection_level -= 1
     end
 
     def switch_name(new_name, &block)
