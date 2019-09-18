@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'switch_connection/error'
-
+require 'pry'
 module SwitchConnection
   class Proxy
     attr_reader :initial_name
@@ -117,16 +117,16 @@ module SwitchConnection
       unless AVAILABLE_MODES.include?(new_mode)
         raise ArgumentError.new("Unknown mode: #{new_mode}")
       end
-
       saved_mode = thread_local_mode
       if (new_mode == :master) || (new_mode == :slave && switch_top_level_connection?)
         self.thread_local_mode = new_mode
       end
-      self .switch_connection_level += 1
+      puts "self.switch_connection_level #{self.switch_connection_level}"
+      self.switch_connection_level += 1
       block.call
     ensure
       self.thread_local_mode = saved_mode
-      self .switch_connection_level -= 1
+      self.switch_connection_level -= 1
     end
 
     def switch_name(new_name, &block)

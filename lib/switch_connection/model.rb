@@ -153,12 +153,6 @@ module SwitchConnection
           super(*args, &block)
         end
       end
-
-      def calculate(*args, &block)
-        self.with_slave do
-          super(*args, &block)
-        end
-      end
     end
   end
 end

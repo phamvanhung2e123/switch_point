@@ -64,5 +64,5 @@ ActiveSupport.on_load(:active_record) do
   require 'switch_connection/model'
   require 'switch_connection/connection_routing'
   ActiveRecord::Base.include(SwitchConnection::Model)
-  ActiveRecord::Relation.prepend(SwitchConnection::ConnectionRouting)
+  ActiveRecord::Relation.prepend(SwitchConnection::Relation::MonkeyPatch)
 end

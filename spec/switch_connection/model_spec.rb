@@ -409,9 +409,7 @@ RSpec.describe SwitchConnection::Model do
     end
     Book.extend(SwitchConnection::Model::AutoReadFromSlave)
     expect(Book.find_by_sql ("SELECT * FROM books")).to eq([])
-    binding.pry
     Book.count
-    binding.pry
     expect(Book.all.count).to eq(0)
     expect(Book.count).to eq(0)
    # Book.with_master { expect(Book.all.count).to eq(1) }

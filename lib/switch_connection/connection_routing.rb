@@ -1,35 +1,37 @@
+# frozen_string_literal: true
+
+# This Module is for MonkeyPatch ActiveRecord::Relation
 module SwitchConnection
-  module ConnectionRouting
-
-    # All the methods that could be querying the database
-    SLAVE_METHODS = [:calculate, :exists?, :pluck]
-    def calculate(*args, &block)
-      if @klass.try(:switch_point_proxy)
-        @klass.with_slave do
+  module Relation
+    module MonkeyPatch
+      def calculate(*args, &block)
+        if @klass.switch_point_proxy
+          @klass.with_slave do
+            super
+          end
+        else
           super
         end
-      else
-        super
       end
-    end
 
-    def exists?(*args, &block)
-      if @klass.try(:switch_point_proxy)
-        @klass.with_slave do
+      def exists?(*args, &block)
+        if @klass.switch_point_proxy
+          @klass.with_slave do
+            super
+          end
+        else
           super
         end
-      else
-        super
       end
-    end
 
-    def pluck(*args, &block)
-      if @klass.try(:switch_point_proxy)
-        @klass.with_slave do
+      def pluck(*args, &block)
+        if @klass.switch_point_proxy
+          @klass.with_slave do
+            super
+          end
+        else
           super
         end
-      else
-        super
       end
     end
   end
