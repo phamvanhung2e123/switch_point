@@ -122,12 +122,12 @@ module SwitchConnection
         raise ArgumentError.new("Unknown mode: #{new_mode}")
       end
       saved_mode = thread_local_mode
-      self.thread_local_mode = if (new_mode == :slave) || (new_mode == :auto_slave && switch_top_level_connection?)
-                                 :slave
-                               else
-                                 :master
-                               end
-      puts "self.switch_connection_level #{self.switch_connection_level}"
+      if (new_mode == :slave) || (new_mode == :auto_slave && switch_top_level_connection?)
+        self.thread_local_mode  = :slave
+      elsif new_mode == :master
+        self.thread_local_mode = :master
+      end
+      puts "self.switch_connection_level #{self.switch_connection_level} #{self.thread_local_mode}"
       self.switch_connection_level += 1
       block.call
     ensure
