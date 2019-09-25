@@ -151,13 +151,13 @@ module SwitchConnection
 
     module AutoReadFromSlave
       def find_by_sql(*args, &block)
-        self.with_auto_slave do
+        with_auto_slave do
           super(*args, &block)
         end
       end
 
       def count_by_sql(*args, &block)
-        self.with_auto_slave do
+        with_auto_slave do
           super(*args, &block)
         end
       end

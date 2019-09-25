@@ -65,16 +65,12 @@ module SwitchConnection
       thread_local_mode || @global_mode
     end
 
-    def switch_connection_levels
-      Thread.current[:switch_connection_levels] ||= Hash.new(0)
-    end
-
     def switch_connection_level=(level)
-      switch_connection_levels[@current_name] = level
+      Thread.current[:"switch_point_#{@current_name}_level"] = level
     end
 
     def switch_connection_level
-      switch_connection_levels[@current_name] || 0
+      Thread.current[:"switch_point_#{@current_name}_level"] || 0
     end
 
     def switch_top_level_connection?
@@ -123,16 +119,20 @@ module SwitchConnection
       end
       saved_mode = thread_local_mode
       if (new_mode == :slave) || (new_mode == :auto_slave && switch_top_level_connection?)
-        self.thread_local_mode  = :slave
+        self.thread_local_mode = :slave
       elsif new_mode == :master
         self.thread_local_mode = :master
       end
-      puts "self.switch_connection_level #{self.switch_connection_level} #{self.thread_local_mode}"
-      self.switch_connection_level += 1
+      self.switch_connection_level = 1
+      puts "before +1 self.switch_connection_level #{@current_name} #{self.switch_connection_level} #{self.thread_local_mode} #{Thread.current[:switch_connection_levels]}"
+      puts "after +1 self.switch_connection_level #{@current_name} #{self.switch_connection_level} #{self.thread_local_mode} #{Thread.current[:switch_connection_levels]}"
       block.call
     ensure
       self.thread_local_mode = saved_mode
+      puts "before -1 self.switch_connection_level #{@current_name} #{self.switch_connection_level} #{self.thread_local_mode} #{Thread.current[:switch_connection_levels]}"
       self.switch_connection_level -= 1
+      puts "after -1 self.switch_connection_level #{@current_name} #{self.switch_connection_level} #{self.thread_local_mode} #{Thread.current[:switch_connection_levels]}"
+      #binding.pry if self.switch_connection_level < 0
     end
 
     def switch_name(new_name, &block)

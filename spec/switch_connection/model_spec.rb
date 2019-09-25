@@ -146,6 +146,7 @@ RSpec.describe SwitchConnection::Model do
 
     context 'without :slave' do
       it 'sends all queries to :master' do
+       # binding.pry
         expect(Nanika3).to connect_to('comment_master.sqlite3')
         Nanika3.with_master do
           expect(Nanika3).to connect_to('comment_master.sqlite3')
@@ -219,6 +220,7 @@ RSpec.describe SwitchConnection::Model do
 
   describe '#with_master' do
     it 'behaves like .with_master' do
+    #  binding.pry
       book = Book.with_master { Book.create! }
       book.with_master do
         expect(Book).to connect_to('main_master.sqlite3')
@@ -392,6 +394,7 @@ RSpec.describe SwitchConnection::Model do
   describe '#transaction_with' do
     it 'behaves like .transaction_with' do
       book = Book.with_master { Book.create! }
+     # binding.pry
       expect(Book.with_master { Book.count }).to eq(1)
       book.transaction_with(Book2) do
         Book.create!
