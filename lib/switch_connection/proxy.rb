@@ -122,17 +122,12 @@ module SwitchConnection
         self.thread_local_mode = :slave
       elsif new_mode == :master
         self.thread_local_mode = :master
+        self.switch_connection_level = 1
       end
-      self.switch_connection_level = 1
-      puts "before +1 self.switch_connection_level #{@current_name} #{self.switch_connection_level} #{self.thread_local_mode} #{Thread.current[:switch_connection_levels]}"
-      puts "after +1 self.switch_connection_level #{@current_name} #{self.switch_connection_level} #{self.thread_local_mode} #{Thread.current[:switch_connection_levels]}"
       block.call
     ensure
       self.thread_local_mode = saved_mode
-      puts "before -1 self.switch_connection_level #{@current_name} #{self.switch_connection_level} #{self.thread_local_mode} #{Thread.current[:switch_connection_levels]}"
-      self.switch_connection_level -= 1
-      puts "after -1 self.switch_connection_level #{@current_name} #{self.switch_connection_level} #{self.thread_local_mode} #{Thread.current[:switch_connection_levels]}"
-      #binding.pry if self.switch_connection_level < 0
+      self.switch_connection_level = 0
     end
 
     def switch_name(new_name, &block)

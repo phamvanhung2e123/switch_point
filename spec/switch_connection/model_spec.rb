@@ -407,6 +407,7 @@ RSpec.describe SwitchConnection::Model do
   end
 
   it 'auto select' do
+    #binding.pry
     Book.with_master do
       Book.create
     end
