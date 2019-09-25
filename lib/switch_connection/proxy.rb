@@ -6,7 +6,7 @@ module SwitchConnection
   class Proxy
     attr_reader :initial_name
 
-    AVAILABLE_MODES = %i[master slave].freeze
+    AVAILABLE_MODES = %i[master slave auto_slave].freeze
     DEFAULT_MODE = :master
 
     def initialize(name)
@@ -113,14 +113,20 @@ module SwitchConnection
       with_mode(:master, &block)
     end
 
+    def with_auto_slave(&block)
+      with_mode(:auto_slave, &block)
+    end
+
     def with_mode(new_mode, &block)
       unless AVAILABLE_MODES.include?(new_mode)
         raise ArgumentError.new("Unknown mode: #{new_mode}")
       end
       saved_mode = thread_local_mode
-      if (new_mode == :master) || (new_mode == :slave && switch_top_level_connection?)
-        self.thread_local_mode = new_mode
-      end
+      self.thread_local_mode = if (new_mode == :slave) || (new_mode == :auto_slave && switch_top_level_connection?)
+                                 :slave
+                               else
+                                 :master
+                               end
       puts "self.switch_connection_level #{self.switch_connection_level}"
       self.switch_connection_level += 1
       block.call

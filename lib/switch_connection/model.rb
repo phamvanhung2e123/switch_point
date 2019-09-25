@@ -38,6 +38,14 @@ module SwitchConnection
         end
       end
 
+      def with_auto_slave(&block)
+        if switch_point_proxy
+          switch_point_proxy.with_auto_slave(&block)
+        else
+          raise UnconfiguredError.new("#{name} isn't configured to use switch_point")
+        end
+      end
+
       def with_master(&block)
         if switch_point_proxy
           switch_point_proxy.with_master(&block)
@@ -143,13 +151,13 @@ module SwitchConnection
 
     module AutoReadFromSlave
       def find_by_sql(*args, &block)
-        self.with_slave do
+        self.with_auto_slave do
           super(*args, &block)
         end
       end
 
       def count_by_sql(*args, &block)
-        self.with_slave do
+        self.with_auto_slave do
           super(*args, &block)
         end
       end
