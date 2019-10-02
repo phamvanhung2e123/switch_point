@@ -163,4 +163,4 @@ module SwitchConnection
   end
 end
 
-ActiveRecord::LogSubscriber.send(:include, SwitchConnection::LogSubscriber)
+ActiveRecord::LogSubscriber.include(SwitchConnection::LogSubscriber)
