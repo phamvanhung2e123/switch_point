@@ -42,7 +42,7 @@ RSpec.describe SwitchConnection::Relation::MonkeyPatch do
 
     context 'when connect to master' do
       it 'id is exist' do
-        Book.with_master { expect(Book.where(id: first_id_in_master_db).exists?).to eq true }
+        Book.with_master { is_expected.to eq true }
         expect(Book.with_master { Book.where(id: first_id_in_master_db).exists? }).to eq true
       end
     end
@@ -59,6 +59,33 @@ RSpec.describe SwitchConnection::Relation::MonkeyPatch do
           Book.with_master { expect(Book.where(id: first_id_in_master_db).exists?).to eq true }
           expect(Book.with_master { Book.where(id: first_id_in_master_db).exists? }).to eq true
           expect(Book.where(id: first_id_in_master_db).exists?).to eq false
+        end.join
+      end
+    end
+  end
+
+  describe '.exists?' do
+    subject { Book.where(id: first_id_in_master_db).count }
+
+    context 'when connect to master' do
+      it 'id is exist' do
+        Book.with_master { is_expected.to eq 1 }
+        expect(Book.with_master { Book.where(id: first_id_in_master_db).count}).to eq 1
+      end
+    end
+
+    context 'when connect to slave' do
+      it 'id is not exist' do
+        is_expected.to eq 0
+      end
+    end
+
+    context 'when in multi thread' do
+      it 'thread safe' do
+        Thread.start do
+          Book.with_master { expect(Book.where(id: first_id_in_master_db).count).to eq 1 }
+          expect(Book.with_master { Book.where(id: first_id_in_master_db).count }).to eq 1
+          expect(Book.where(id: first_id_in_master_db).count).to eq 0
         end.join
       end
     end
