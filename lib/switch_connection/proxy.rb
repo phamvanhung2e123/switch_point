@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'switch_connection/error'
-require 'pry'
 module SwitchConnection
   class Proxy
     attr_reader :initial_name
