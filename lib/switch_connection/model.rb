@@ -143,14 +143,22 @@ module SwitchConnection
 
     module AutoReadFromSlave
       def find_by_sql(*args, &block)
-        with_slave do
-          super(*args, &block)
+        if switch_point_proxy
+          with_slave do
+            super
+          end
+        else
+          super
         end
       end
 
       def count_by_sql(*args, &block)
-        with_slave do
-          super(*args, &block)
+        if switch_point_proxy
+          with_slave do
+            super
+          end
+        else
+          super
         end
       end
     end
