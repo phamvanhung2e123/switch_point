@@ -10,6 +10,25 @@ module SwitchConnection
       model.singleton_class.class_eval do
         include ClassMethods
         prepend MonkeyPatch
+        def find_by_sql(*args, &block)
+          if switch_point_proxy
+            with_slave do
+              super
+            end
+          else
+            super
+          end
+        end
+
+        def count_by_sql(*args, &block)
+          if switch_point_proxy
+            with_slave do
+              super
+            end
+          else
+            super
+          end
+        end
       end
     end
 
@@ -135,28 +154,6 @@ module SwitchConnection
       def uncached(&block)
         if switch_point_proxy
           switch_point_proxy.uncached(&block)
-        else
-          super
-        end
-      end
-    end
-
-    module AutoReadFromSlave
-      def find_by_sql(*args, &block)
-        if switch_point_proxy
-          with_slave do
-            super
-          end
-        else
-          super
-        end
-      end
-
-      def count_by_sql(*args, &block)
-        if switch_point_proxy
-          with_slave do
-            super
-          end
         else
           super
         end
