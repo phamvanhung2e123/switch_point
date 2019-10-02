@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
-require 'pry'
-require 'logger'
 
-ActiveRecord::Base.logger = Logger.new STDOUT
 RSpec.describe SwitchConnection::Model do
   describe '.use_switch_point' do
     after do

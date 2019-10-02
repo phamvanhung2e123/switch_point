@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'pry'
 SwitchConnection.configure do |config|
   config.define_switch_point :main,
                              slaves: [:main_slave],
@@ -164,3 +165,5 @@ module SwitchConnection
 end
 
 ActiveRecord::LogSubscriber.include(SwitchConnection::LogSubscriber)
+require 'logger'
+ActiveRecord::Base.logger = Logger.new STDOUT

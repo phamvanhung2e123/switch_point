@@ -65,16 +65,16 @@ module SwitchConnection
       thread_local_mode || @global_mode
     end
 
-    def force_master_mode=(level)
+    def switch_connection_level=(level)
       Thread.current[:"switch_point_#{@current_name}_level"] = level
     end
 
-    def force_master_mode
+    def switch_connection_level
       Thread.current[:"switch_point_#{@current_name}_level"] || 0
     end
 
-    def force_master_mode?
-      force_master_mode == 1
+    def switch_top_level_connection?
+      switch_connection_level.zero?
     end
 
     def slave!
@@ -111,20 +111,24 @@ module SwitchConnection
 
     def with_mode(new_mode, &block)
       unless AVAILABLE_MODES.include?(new_mode)
+        self.switch_connection_level += 1
         raise ArgumentError.new("Unknown mode: #{new_mode}")
       end
 
       saved_mode = thread_local_mode
-      if new_mode == :slave && !force_master_mode?
+      if new_mode == :slave && switch_top_level_connection?
         self.thread_local_mode = :slave
       elsif new_mode == :master
         self.thread_local_mode = :master
-        self.force_master_mode = 1
       end
+      binding.pry if self.switch_connection_level < 0
+      self.switch_connection_level += 1
+      puts "switch_connection_level before call #{self.switch_connection_level} #{@current_name} #{new_mode}"
       block.call
     ensure
       self.thread_local_mode = saved_mode
-      self.force_master_mode = 0
+      self.switch_connection_level -= 1
+      puts "switch_connection_level after call #{self.switch_connection_level} #{@current_name} #{new_mode}"
     end
 
     def switch_name(new_name, &block)
