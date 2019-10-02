@@ -70,7 +70,7 @@ RSpec.describe SwitchConnection::Relation::MonkeyPatch do
     context 'when connect to master' do
       it 'id is exist' do
         Book.with_master { is_expected.to eq 1 }
-        expect(Book.with_master { Book.where(id: first_id_in_master_db).count}).to eq 1
+        expect(Book.with_master { Book.where(id: first_id_in_master_db).count }).to eq 1
       end
     end
 

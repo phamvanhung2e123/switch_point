@@ -121,7 +121,6 @@ module SwitchConnection
       elsif new_mode == :master
         self.thread_local_mode = :master
       end
-      binding.pry if self.switch_connection_level < 0
       self.switch_connection_level += 1
       puts "switch_connection_level before call #{self.switch_connection_level} #{@current_name} #{new_mode}"
       block.call
