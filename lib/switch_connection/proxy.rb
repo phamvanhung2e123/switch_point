@@ -6,7 +6,7 @@ module SwitchConnection
   class Proxy
     attr_reader :initial_name
 
-    AVAILABLE_MODES = %i[master slave auto_slave].freeze
+    AVAILABLE_MODES = %i[master slave].freeze
     DEFAULT_MODE = :master
 
     def initialize(name)
@@ -65,16 +65,16 @@ module SwitchConnection
       thread_local_mode || @global_mode
     end
 
-    def switch_connection_level=(level)
+    def force_master_mode=(level)
       Thread.current[:"switch_point_#{@current_name}_level"] = level
     end
 
-    def switch_connection_level
+    def force_master_mode
       Thread.current[:"switch_point_#{@current_name}_level"] || 0
     end
 
-    def switch_top_level_connection?
-      switch_connection_level.zero?
+    def force_master_mode?
+      force_master_mode == 1
     end
 
     def slave!
@@ -109,26 +109,22 @@ module SwitchConnection
       with_mode(:master, &block)
     end
 
-    def with_auto_slave(&block)
-      with_mode(:auto_slave, &block)
-    end
-
     def with_mode(new_mode, &block)
       unless AVAILABLE_MODES.include?(new_mode)
         raise ArgumentError.new("Unknown mode: #{new_mode}")
       end
 
       saved_mode = thread_local_mode
-      if (new_mode == :slave) || (new_mode == :auto_slave && switch_top_level_connection?)
+      if new_mode == :slave && !force_master_mode?
         self.thread_local_mode = :slave
       elsif new_mode == :master
         self.thread_local_mode = :master
-        self.switch_connection_level = 1
+        self.force_master_mode = 1
       end
       block.call
     ensure
       self.thread_local_mode = saved_mode
-      self.switch_connection_level = 0
+      self.force_master_mode = 0
     end
 
     def switch_name(new_name, &block)

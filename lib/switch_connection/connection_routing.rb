@@ -6,7 +6,7 @@ module SwitchConnection
     module MonkeyPatch
       def calculate(*args, &block)
         if @klass.switch_point_proxy
-          @klass.with_auto_slave do
+          @klass.with_slave do
             super
           end
         else
@@ -16,7 +16,7 @@ module SwitchConnection
 
       def exists?(*args, &block)
         if @klass.switch_point_proxy
-          @klass.with_auto_slave do
+          @klass.with_slave do
             super
           end
         else
@@ -26,7 +26,7 @@ module SwitchConnection
 
       def pluck(*args, &block)
         if @klass.switch_point_proxy
-          @klass.with_auto_slave do
+          @klass.with_slave do
             super
           end
         else
