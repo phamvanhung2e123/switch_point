@@ -117,6 +117,7 @@ module SwitchConnection
       unless AVAILABLE_MODES.include?(new_mode)
         raise ArgumentError.new("Unknown mode: #{new_mode}")
       end
+
       saved_mode = thread_local_mode
       if (new_mode == :slave) || (new_mode == :auto_slave && switch_top_level_connection?)
         self.thread_local_mode = :slave
