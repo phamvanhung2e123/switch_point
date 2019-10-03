@@ -5,7 +5,6 @@ module SwitchConnection
   module Relation
     module MonkeyPatch
       def calculate(*args, &block)
-        puts "calculate"
         if @klass.switch_point_proxy
           @klass.with_slave do
             super
