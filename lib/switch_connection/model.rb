@@ -10,8 +10,26 @@ module SwitchConnection
       model.singleton_class.class_eval do
         include ClassMethods
         prepend MonkeyPatch
+        def find_by_sql(*args, &block)
+          if switch_point_proxy
+            with_slave do
+              super
+            end
+          else
+            super
+          end
+        end
+
+        def count_by_sql(*args, &block)
+          if switch_point_proxy
+            with_slave do
+              super
+            end
+          else
+            super
+          end
+        end
       end
-      model.prepend(InstanceMethods)
     end
 
     def with_slave(&block)
@@ -28,6 +46,12 @@ module SwitchConnection
 
     def transaction_with(*models, &block)
       self.class.transaction_with(*models, &block)
+    end
+
+    def reload(*args, &block)
+      self.class.with_master do
+        super(*args, &block)
+      end
     end
 
     module ClassMethods
@@ -114,14 +138,6 @@ module SwitchConnection
       end
     end
 
-    module InstanceMethods
-      def reload(*args, &block)
-        self.class.with_master do
-          super(*args, &block)
-        end
-      end
-    end
-
     module MonkeyPatch
       def connection
         if switch_point_proxy
@@ -144,26 +160,6 @@ module SwitchConnection
       def uncached(&block)
         if switch_point_proxy
           switch_point_proxy.uncached(&block)
-        else
-          super
-        end
-      end
-
-      def find_by_sql(*args, &block)
-        if switch_point_proxy
-          with_slave do
-            super
-          end
-        else
-          super
-        end
-      end
-
-      def count_by_sql(*args, &block)
-        if switch_point_proxy
-          with_slave do
-            super
-          end
         else
           super
         end
