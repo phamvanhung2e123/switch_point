@@ -121,12 +121,10 @@ module SwitchConnection
         self.thread_local_mode = :master
       end
       self.switch_connection_level += 1
-      puts "switch_connection_level before call #{self.switch_connection_level} #{@current_name} #{new_mode}"
       block.call
     ensure
       self.thread_local_mode = saved_mode
       self.switch_connection_level -= 1
-      puts "switch_connection_level after call #{self.switch_connection_level} #{@current_name} #{new_mode}"
     end
 
     def switch_name(new_name, &block)

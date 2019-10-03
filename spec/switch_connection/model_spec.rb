@@ -400,14 +400,83 @@ RSpec.describe SwitchConnection::Model do
     end
   end
 
-  it 'auto select' do
-    Book.with_master do
-      Book.create
+  describe '.find_by_sql' do
+    before do
+      Book.with_master do
+        Book.create
+      end
     end
-    expect(Book.find_by_sql('SELECT * FROM books')).to eq([])
-    Book.count
-    expect(Book.all.count).to eq(0)
-    expect(Book.count).to eq(0)
-    Book.with_master { expect(Book.all.count).to eq(1) }
+
+    context 'when call find_by_sql from slave' do
+      it 'empty array' do
+        expect(Book.find_by_sql('SELECT * FROM books')).to eq([])
+      end
+    end
+
+    context 'when call find_by_sql from master' do
+      it 'not empty array' do
+        expect(Book.with_master { Book.find_by_sql('SELECT * FROM books') }).not_to eq([])
+      end
+    end
+  end
+
+  describe '.count_of_sql' do
+    before do
+      Book.with_master do
+        Book.create
+      end
+    end
+
+    context 'when count from slave' do
+      it 'return 0' do
+        expect(Book.count).to eq(0)
+        expect(Book.all.count).to eq(0)
+      end
+    end
+
+    context 'when count from master' do
+      it 'return 1' do
+        Book.with_master { expect(Book.all.count).to eq(1) }
+        expect(Book.with_master { Book.all.count }).to eq(1)
+      end
+    end
+  end
+
+  describe '.cache' do
+    before do
+      Book.with_master do
+        Book.create
+      end
+    end
+
+    context 'when call count' do
+      it 'return 0' do
+        Book.cache {
+          expect(Book.count).to eq 0
+          expect(Book.count).to eq 0
+          expect(Book.with_master { Book.count }).to eq 1
+          expect(Book.with_master { Book.count }).to eq 1
+        }
+      end
+    end
+  end
+
+  describe '.uncached' do
+    before do
+      Book.with_master do
+        Book.create
+      end
+    end
+
+    context 'when call count' do
+      it 'return 0' do
+        Book.uncached {
+          expect(Book.count).to eq 0
+          expect(Book.count).to eq 0
+          expect(Book.with_master { Book.count }).to eq 1
+          expect(Book.with_master { Book.count }).to eq 1
+        }
+      end
+    end
   end
 end
