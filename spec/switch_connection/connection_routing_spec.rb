@@ -64,7 +64,7 @@ RSpec.describe SwitchConnection::Relation::MonkeyPatch do
     end
   end
 
-  describe '.exists?' do
+  describe '.calculate' do
     subject { Book.where(id: first_id_in_master_db).count }
 
     context 'when connect to master' do

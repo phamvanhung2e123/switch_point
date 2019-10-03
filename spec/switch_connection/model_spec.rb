@@ -429,15 +429,14 @@ RSpec.describe SwitchConnection::Model do
 
     context 'when count from slave' do
       it 'return 0' do
-        expect(Book.count).to eq(0)
-        expect(Book.all.count).to eq(0)
+        expect(Book.count_by_sql('select count(*) from books')).to eq(0)
       end
     end
 
     context 'when count from master' do
       it 'return 1' do
-        Book.with_master { expect(Book.all.count).to eq(1) }
-        expect(Book.with_master { Book.all.count }).to eq(1)
+        Book.with_master { expect(Book.count_by_sql('select count(*) from books')).to eq(1) }
+        expect(Book.with_master { Book.count_by_sql('select count(*) from books') }).to eq(1)
       end
     end
   end
