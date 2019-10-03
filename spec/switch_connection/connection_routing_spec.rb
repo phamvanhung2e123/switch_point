@@ -10,7 +10,7 @@ RSpec.describe SwitchConnection::Relation::MonkeyPatch do
     end
   end
 
-  let(:first_id_in_master_db) { Book.with_master { Book.all.first.id } }
+  let(:first_id_in_master_db) { Book.with_master { Book.first.id } }
   describe '.pluck' do
     subject { Book.pluck(:id) }
     context 'when connect to master' do
