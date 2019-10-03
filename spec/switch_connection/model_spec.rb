@@ -402,9 +402,7 @@ RSpec.describe SwitchConnection::Model do
 
   describe '.find_by_sql' do
     before do
-      Book.with_master do
-        Book.create
-      end
+      Book.create
     end
 
     context 'when call find_by_sql from slave' do
@@ -422,9 +420,7 @@ RSpec.describe SwitchConnection::Model do
 
   describe '.count_of_sql' do
     before do
-      Book.with_master do
-        Book.create
-      end
+      Book.create
     end
 
     context 'when count from slave' do
@@ -443,9 +439,7 @@ RSpec.describe SwitchConnection::Model do
 
   describe '.cache' do
     before do
-      Book.with_master do
-        Book.create
-      end
+      Book.create
     end
 
     context 'when call count' do
@@ -462,9 +456,7 @@ RSpec.describe SwitchConnection::Model do
 
   describe '.uncached' do
     before do
-      Book.with_master do
-        Book.create
-      end
+      Book.create
     end
 
     context 'when call count' do
