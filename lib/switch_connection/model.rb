@@ -48,6 +48,12 @@ module SwitchConnection
       self.class.transaction_with(*models, &block)
     end
 
+    def reload(*args, &block)
+      self.class.with_master do
+        super(*args, &block)
+      end
+    end
+
     module ClassMethods
       def with_slave(&block)
         if switch_point_proxy

@@ -5,9 +5,7 @@ require 'logger'
 
 RSpec.describe SwitchConnection::Relation::MonkeyPatch do
   before do
-    Book.with_master do
-      Book.create
-    end
+    Book.create
   end
 
   let(:first_id_in_master_db) { Book.with_master { Book.first.id } }
