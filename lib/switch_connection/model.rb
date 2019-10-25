@@ -59,7 +59,7 @@ module SwitchConnection
         if switch_point_proxy
           switch_point_proxy.with_slave(&block)
         else
-          raise UnconfiguredError.new("#{name} isn't configured to use switch_point")
+          yield
         end
       end
 
@@ -67,7 +67,7 @@ module SwitchConnection
         if switch_point_proxy
           switch_point_proxy.with_master(&block)
         else
-          raise UnconfiguredError.new("#{name} isn't configured to use switch_point")
+          yield
         end
       end
 
