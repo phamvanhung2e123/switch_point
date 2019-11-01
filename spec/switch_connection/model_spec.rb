@@ -198,12 +198,6 @@ RSpec.describe SwitchConnection::Model do
       end
     end
 
-    context 'without use_switch_point' do
-      it 'raises error' do
-        expect { Note.with_master { :bypass } }.to raise_error(SwitchConnection::UnconfiguredError)
-      end
-    end
-
     it 'affects thread-locally' do
       Book.with_slave do
         expect(Book).to connect_to('main_slave.sqlite3')
