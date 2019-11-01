@@ -5,7 +5,7 @@ module SwitchConnection
   module Relation
     module MonkeyPatch
       def calculate(*args, &block)
-        if @klass.switch_point_proxy && !lock_value
+        if @klass.switch_point_proxy && !lock_value && @klass.connection.open_transactions.zero?
           @klass.with_slave do
             super
           end
@@ -15,7 +15,7 @@ module SwitchConnection
       end
 
       def exists?(*args, &block)
-        if @klass.switch_point_proxy && !lock_value
+        if @klass.switch_point_proxy && !lock_value && @klass.connection.open_transactions.zero?
           @klass.with_slave do
             super
           end
@@ -25,7 +25,7 @@ module SwitchConnection
       end
 
       def pluck(*args, &block)
-        if @klass.switch_point_proxy && !lock_value
+        if @klass.switch_point_proxy && !lock_value && @klass.connection.open_transactions.zero?
           @klass.with_slave do
             super
           end

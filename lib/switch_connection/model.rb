@@ -11,7 +11,7 @@ module SwitchConnection
         include ClassMethods
         prepend MonkeyPatch
         def find_by_sql(*args, &block)
-          if switch_point_proxy
+          if switch_point_proxy && connection.open_transactions.zero?
             with_slave do
               super
             end
@@ -21,7 +21,7 @@ module SwitchConnection
         end
 
         def count_by_sql(*args, &block)
-          if switch_point_proxy
+          if switch_point_proxy && connection.open_transactions.zero?
             with_slave do
               super
             end
