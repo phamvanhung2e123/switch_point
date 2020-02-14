@@ -72,18 +72,26 @@ end
 
 ### Switching connections
 
+- Write query automatically go master database, read query automatically go to slave database.
 ```ruby
-Article.first # Read from db-blog-slave
-Category.first # Also read from db-blog-slave
-Comment.first # Read from db-comment-slave
-
-Article.with_master do
-  article.save!  # Write to db-blog-master
-  article.reload  # Read from db-blog-master
-  Category.first  # Read from db-blog-master
-end
+article = Article.find(1) # read query go to slave
+article.name = "hoge"
+article.save # write query go to master
 ```
 
+- Use with_master to force query go to master database.
+```ruby
+Article.with_master do
+  article.save! # Write to master db
+  Article.first # Read from master db
+end
+```
+- Force query to master database.
+```ruby
+Article.with_master { Article.all }
+Article.with_master { Article.find(1) }
+Article.with_master { Article.where(name: "foobar").to_a }
+```
 - with_switch_point
 ```ruby
 Book.with_switch_point(:main) { Book.count  }
