@@ -10,7 +10,7 @@ AllCops:
 Performance/RedundantBlockCall:
   Enabled: false
 
-Layout/AlignParameters:
+Layout/ParameterAlignment:
   Enabled: false
 
 LineLength:
