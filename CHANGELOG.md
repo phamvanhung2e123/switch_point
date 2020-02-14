@@ -1,3 +1,6 @@
+## 1.1.0
+- Add auto send read query to slave https://github.com/phamvanhung2e123/switch_point/pull/5
+
 ## 1.0.0 (2019-07-31)
 - Multi slaves support
 - Connect to master by default
