@@ -93,42 +93,11 @@ Note that Article and Category shares their connections.
 
 ## Notes
 
-### auto_master
-`auto_master` by default.
-
-When `auto_master` is enabled, destructive queries is sent to writable connection even in slave mode.
-But it does NOT work well on transactions.
-
-Suppose `after_save` callback is set to User model. When `User.create` is called, it proceeds as follows.
-
-1. BEGIN TRANSACTION is sent to READONLY connection.
-2. switch_point switches the connection to WRITABLE.
-3. INSERT statement is sent to WRITABLE connection.
-4. switch_point reset the connection to READONLY.
-5. after_save callback is called.
-    - At this point, the connection is READONLY and in a transaction.
-6. COMMIT TRANSACTION is sent to READONLY connection.
-
-### connection-related methods of model
-Model has several connection-related methods: `connection_handler`, `connection_pool`, `connected?` and so on.
-Since only `connection` method is monkey-patched, other connection-related methods doesn't work properly.
-If you'd like to use those methods, send it to `Model.switch_point_proxy.model_for_connection`.
-
-## Internals
-There's a proxy which holds two connections: slave one and writable one.
-A proxy has a thread-local state indicating the current mode: slave or writable.
-
-Each ActiveRecord model refers to a proxy.
-`ActiveRecord::Base.connection` is hooked and delegated to the referred proxy.
-
-When the writable connection is requested to execute destructive query, the slave connection clears its query cache.
-
 ![switch_point](https://gyazo.wanko.cc/switch_point.svg)
 
 ### Special case: ActiveRecord::Base.connection
 Basically, each connection managed by a proxy isn't shared between proxies.
 But there's one exception: ActiveRecord::Base.
-
 
 ## Contributing
 
