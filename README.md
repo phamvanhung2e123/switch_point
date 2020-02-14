@@ -91,10 +91,6 @@ Book.with_switch_point(:main) { Book.count  }
 
 Note that Article and Category shares their connections.
 
-## Notes
-
-![switch_point](https://gyazo.wanko.cc/switch_point.svg)
-
 ### Special case: ActiveRecord::Base.connection
 Basically, each connection managed by a proxy isn't shared between proxies.
 But there's one exception: ActiveRecord::Base.
