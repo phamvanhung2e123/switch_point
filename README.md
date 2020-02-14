@@ -4,7 +4,7 @@
 [![Coverage Status](https://img.shields.io/coveralls/phamvanhung2e123/switch_point.svg?branch=master)](https://coveralls.io/r/phamvanhung2e123/switch_point?branch=master)
 [![Code Climate](https://codeclimate.com/github/phamvanhung2e123/switch_point/badges/gpa.svg)](https://codeclimate.com/github/phamvanhung2e123/switch_point)
 
-Switching database connection between slave one and writable one. Fork from `switch_point` gem.
+Switching database connection between multiple slave and writable one. Fork from `switch_point` gem.
 Original Version: https://github.com/eagletmt/switch_point.
 
 ## Installation
