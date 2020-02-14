@@ -198,12 +198,6 @@ RSpec.describe SwitchConnection::Model do
       end
     end
 
-    context 'without use_switch_point' do
-      it 'raises error' do
-        expect { Note.with_master { :bypass } }.to raise_error(SwitchConnection::UnconfiguredError)
-      end
-    end
-
     it 'affects thread-locally' do
       Book.with_slave do
         expect(Book).to connect_to('main_slave.sqlite3')
@@ -397,6 +391,77 @@ RSpec.describe SwitchConnection::Model do
       expect(Book.with_master { Book.count }).to eq(1)
 
       expect { book.transaction_with(Book3) {} }.to raise_error(SwitchConnection::Error)
+    end
+  end
+
+  describe '.find_by_sql' do
+    before do
+      Book.create
+    end
+
+    context 'when call find_by_sql from slave' do
+      it 'empty array' do
+        expect(Book.find_by_sql('SELECT * FROM books')).to eq([])
+      end
+    end
+
+    context 'when call find_by_sql from master' do
+      it 'not empty array' do
+        expect(Book.with_master { Book.find_by_sql('SELECT * FROM books') }).not_to eq([])
+      end
+    end
+  end
+
+  describe '.count_of_sql' do
+    before do
+      Book.create
+    end
+
+    context 'when count from slave' do
+      it 'return 0' do
+        expect(Book.count_by_sql('select count(*) from books')).to eq(0)
+      end
+    end
+
+    context 'when count from master' do
+      it 'return 1' do
+        Book.with_master { expect(Book.count_by_sql('select count(*) from books')).to eq(1) }
+        expect(Book.with_master { Book.count_by_sql('select count(*) from books') }).to eq(1)
+      end
+    end
+  end
+
+  describe '.cache' do
+    before do
+      Book.create
+    end
+
+    context 'when call count' do
+      it 'return 0' do
+        Book.cache {
+          expect(Book.count).to eq 0
+          expect(Book.count).to eq 0
+          expect(Book.with_master { Book.count }).to eq 1
+          expect(Book.with_master { Book.count }).to eq 1
+        }
+      end
+    end
+  end
+
+  describe '.uncached' do
+    before do
+      Book.create
+    end
+
+    context 'when call count' do
+      it 'return 0' do
+        Book.uncached {
+          expect(Book.count).to eq 0
+          expect(Book.count).to eq 0
+          expect(Book.with_master { Book.count }).to eq 1
+          expect(Book.with_master { Book.count }).to eq 1
+        }
+      end
     end
   end
 end

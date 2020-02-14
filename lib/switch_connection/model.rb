@@ -10,6 +10,25 @@ module SwitchConnection
       model.singleton_class.class_eval do
         include ClassMethods
         prepend MonkeyPatch
+        def find_by_sql(*args, &block)
+          if switch_point_proxy && connection.open_transactions.zero?
+            with_slave do
+              super
+            end
+          else
+            super
+          end
+        end
+
+        def count_by_sql(*args, &block)
+          if switch_point_proxy && connection.open_transactions.zero?
+            with_slave do
+              super
+            end
+          else
+            super
+          end
+        end
       end
     end
 
@@ -29,12 +48,18 @@ module SwitchConnection
       self.class.transaction_with(*models, &block)
     end
 
+    def reload(*args, &block)
+      self.class.with_master do
+        super(*args, &block)
+      end
+    end
+
     module ClassMethods
       def with_slave(&block)
         if switch_point_proxy
           switch_point_proxy.with_slave(&block)
         else
-          raise UnconfiguredError.new("#{name} isn't configured to use switch_point")
+          yield
         end
       end
 
@@ -42,7 +67,7 @@ module SwitchConnection
         if switch_point_proxy
           switch_point_proxy.with_master(&block)
         else
-          raise UnconfiguredError.new("#{name} isn't configured to use switch_point")
+          yield
         end
       end
 
@@ -117,7 +142,7 @@ module SwitchConnection
       def connection
         if switch_point_proxy
           connection = switch_point_proxy.connection
-          connection.connection_name = switch_point_name
+          connection.connection_name = "#{switch_point_name} #{switch_point_proxy.mode}"
           connection
         else
           super

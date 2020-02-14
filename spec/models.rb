@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'pry'
 SwitchConnection.configure do |config|
   config.define_switch_point :main,
                              slaves: [:main_slave],
@@ -139,3 +140,30 @@ ActiveRecord::Base.connection # Create connection
     end
   end
 end
+
+module SwitchConnection
+  module LogSubscriber
+    def self.included(base)
+      base.send(:attr_accessor, :connection_name)
+      base.send(:alias_method, :sql_without_connection_name, :sql)
+      base.send(:alias_method, :sql, :sql_with_connection_name)
+
+      base.send(:alias_method, :debug_without_connection_name, :debug)
+      base.send(:alias_method, :debug, :debug_with_connection_name)
+    end
+
+    def sql_with_connection_name(event)
+      self.connection_name = event.payload[:connection_name]
+      sql_without_connection_name(event)
+    end
+
+    def debug_with_connection_name(msg)
+      conn = connection_name ? color("  [#{connection_name}]", ActiveSupport::LogSubscriber::BLUE, true) : ''
+      debug_without_connection_name(conn + msg)
+    end
+  end
+end
+
+ActiveRecord::LogSubscriber.include(SwitchConnection::LogSubscriber)
+require 'logger'
+ActiveRecord::Base.logger = Logger.new STDOUT

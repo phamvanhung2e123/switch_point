@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'switch_connection/error'
-
 module SwitchConnection
   class Proxy
     attr_reader :initial_name
@@ -65,6 +64,18 @@ module SwitchConnection
       thread_local_mode || @global_mode
     end
 
+    def switch_connection_level=(level)
+      Thread.current[:"switch_point_#{@current_name}_level"] = level
+    end
+
+    def switch_connection_level
+      Thread.current[:"switch_point_#{@current_name}_level"] || 0
+    end
+
+    def switch_top_level_connection?
+      switch_connection_level.zero?
+    end
+
     def slave!
       if thread_local_mode
         self.thread_local_mode = :slave
@@ -99,14 +110,21 @@ module SwitchConnection
 
     def with_mode(new_mode, &block)
       unless AVAILABLE_MODES.include?(new_mode)
+        self.switch_connection_level += 1
         raise ArgumentError.new("Unknown mode: #{new_mode}")
       end
 
       saved_mode = thread_local_mode
-      self.thread_local_mode = new_mode
+      if new_mode == :slave && switch_top_level_connection?
+        self.thread_local_mode = :slave
+      elsif new_mode == :master
+        self.thread_local_mode = :master
+      end
+      self.switch_connection_level += 1
       block.call
     ensure
       self.thread_local_mode = saved_mode
+      self.switch_connection_level -= 1
     end
 
     def switch_name(new_name, &block)

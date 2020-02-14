@@ -3,6 +3,7 @@ rvm:
   - 2.3.7
   - 2.4.4
   - 2.5.1
+  - 2.6.5
   - ruby-head
 gemfile:
   - gemfiles/rails_3.2.gemfile
@@ -20,3 +21,21 @@ matrix:
   allow_failures:
     - rvm: ruby-head
     - gemfile: gemfiles/rails_edge.gemfile
+    - rvm: 2.4.4
+      gemfile: gemfiles/rails_3.2.gemfile
+    - rvm: 2.4.4
+      gemfile: gemfiles/rails_4.0.gemfile
+    - rvm: 2.4.4
+      gemfile: gemfiles/rails_4.1.gemfile
+    - rvm: 2.5.1
+      gemfile: gemfiles/rails_3.2.gemfile
+    - rvm: 2.5.1
+      gemfile: gemfiles/rails_4.0.gemfile
+    - rvm: 2.5.1
+      gemfile: gemfiles/rails_4.1.gemfile
+    - rvm: 2.6.5
+      gemfile: gemfiles/rails_3.2.gemfile
+    - rvm: 2.6.5
+      gemfile: gemfiles/rails_4.0.gemfile
+    - rvm: 2.6.5
+      gemfile: gemfiles/rails_4.1.gemfile
